@@ -377,7 +377,8 @@ class End_Job(object):
             gdb = Get_Gdb_path()
             mxd = Get_Mxd_path()
 
-            url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CloseEditingTalar"
+            #url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CloseEditingTalar"
+            url = "http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CheckParcelNum"
             desc_list = dict([i.split(":") for i in ((arcpy.mapping.ListDataFrames((arcpy.mapping.MapDocument(r'CURRENT')), "*")[0]).description.split(";\r\n")) if i.split(":")[0] <> u''])
             desc_list['gdbEdited'] = gdb
             values = {'gdbEdited':str(desc_list['gdbEdited']),
