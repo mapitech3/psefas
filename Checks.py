@@ -285,7 +285,7 @@ def make_polygon_to_point(layer):
                                     icursor.insertRow (in_row)
         del cursor
         return out_put
-        
+
 
 def topology_basic(final,ws):
 
@@ -1003,10 +1003,12 @@ double_node_cbx                  =  arcpy.GetParameterAsText(8)
 Empty2                           =  arcpy.GetParameterAsText(9)
 
 parcel_out_and_no_parcel_in_cbx  =  arcpy.GetParameterAsText(10)
-Check_area_in_tazar_cbx           =  arcpy.GetParameterAsText(11)
+Check_area_in_tazar_cbx          =  arcpy.GetParameterAsText(11)
 Gush_parcel_doubled_cbx          =  arcpy.GetParameterAsText(12)
 missing_Values_in_parcel_cbx     =  arcpy.GetParameterAsText(13)
 Parcel_gush_number_not_vaild_cbx =  arcpy.GetParameterAsText(14)
+
+select_all_cbx                   = arcpy.GetParameterAsText(15)
 
 ## start process...
 
@@ -1034,6 +1036,20 @@ if lyr_dataSource:
     arcpy.Select_analysis(lyr_dataSource, ws + "\\PARCEL_ALL_FINAL")
     parcel_all_final = ws + "\\PARCEL_ALL_FINAL"
     
+    if select_all_cbx == 'true':
+        topology_basic_cbx               = 'true'
+        line_Not_on_parcels_cbx          = 'true'
+        point_Not_in_bankal_or_moded_cbx = 'true'
+        Missing_arc_cbx                  = 'true'
+        Node_not_on_parcel_cbx           = 'true'
+        get_no_node_vertex_cbx           = 'true'
+        double_arc_cbx                   = 'true'
+        double_node_cbx                  = 'true'
+        parcel_out_and_no_parcel_in_cbx  = 'true'
+        Check_area_in_tazar_cbx          = 'true'
+        Gush_parcel_doubled_cbx          = 'true'
+        missing_Values_in_parcel_cbx     = 'true'
+        Parcel_gush_number_not_vaild_cbx = 'true'
 
     Empty == ''
 
