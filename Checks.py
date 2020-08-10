@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding:utf-8-*-
 import arcpy
 import pythonaddins
@@ -285,44 +285,36 @@ def make_polygon_to_point(layer):
                                     icursor.insertRow (in_row)
         del cursor
         return out_put
-                                               
+        
 
-def topology_basic(final):
+def topology_basic(final,ws):
+
 
     no_holes     = False
     no_intersect = False
-    
-    gdb    = os.path.dirname(final)
-    memory = r'in_memory'
-    arcpy.Dissolve_management                 (final,memory + '\\'+ 'dissolve')
-    Feature_to_polygon                        (memory + '\\'+ 'dissolve',memory + '\\'+'Feature_to_poly')
-    if arcpy.Exists(gdb + '\\'+'Topolgy_Check_holes'):
-        arcpy.Delete_management(gdb + '\\'+'Topolgy_Check_holes')
-    Delete_polygons                           (memory + '\\'+'Feature_to_poly',memory + '\\'+ 'dissolve',gdb + '\\'+'Topolgy_Check_holes')
-    count = int(str(arcpy.GetCount_management (gdb + '\\'+'Topolgy_Check_holes')))
-    if count == 0:
-        arcpy.Delete_management(gdb + '\\'+'Topolgy_Check_holes')
-        print_arcpy_message('all ok, no holes in layer',1)
-        no_holes = True
-        
 
-    if arcpy.Exists(gdb + '\\'+'Topolgy_Check_intersect'):
-        arcpy.Delete_management(gdb + '\\'+'Topolgy_Check_intersect')
-        
-    over_lap       = arcpy.Intersect_analysis([final],gdb + '\\'+'Topolgy_Check_intersect')
-    over_lap_count = int(str(arcpy.GetCount_management (over_lap)))
-    if over_lap_count == 0:
-        arcpy.Delete_management(gdb + '\\'+'Topolgy_Check_intersect')
-        print_arcpy_message('all ok, no intersect in layer',1)
-        no_intersect = True
+    gdb           = os.path.dirname(final)
+    memory        = r'in_memory'
+    Diss          = memory + '\\' + 'dissolve'
+    feat_to_poly  = memory + '\\' + 'Feature_to_poly'
+    topo_holes    = gdb    + '\\' + 'Topolgy_Check_holes'
+    topo_inter    = gdb    + '\\' + 'Topolgy_Check_intersect'
+    error_polygon = ws     + '\\' + 'Errors_polygon'
 
-    arcpy.Delete_management(memory + '\\'+ 'dissolve')
-    arcpy.Delete_management(memory + '\\'+ 'Feature_to_poly')
-    arcpy.Delete_management(memory + '\\'+ 'dissolve_temp')
+    deleteErrorCode (error_polygon, ["3"])
+    deleteErrorCode (error_polygon, ["4"])
 
-    return count,over_lap_count
+    arcpy.Dissolve_management                 (final,Diss)
+    Feature_to_polygon                        (Diss,feat_to_poly)
+    Delete_polygons                           (feat_to_poly,Diss,topo_holes)
 
+    arcpy.Intersect_analysis([final],topo_inter)
 
+    Calc_field_value_error  (topo_holes,error_polygon,"3",ErrorDictionary["3"])
+    Calc_field_value_error  (topo_inter,error_polygon,"4",ErrorDictionary["4"])
+
+    arcpy.Delete_management(Diss)
+    arcpy.Delete_management(feat_to_poly)
 
 
 
@@ -368,7 +360,7 @@ def line_Not_on_parcels(ARC_bankal,Parcel_makor, ws):
     if del_lines:
         arcpy.Select_analysis   (temp_arc, temp_err_arc,"\"OBJECTID\" IN ("+str(del_lines)[1:-1]+")")
         arcpy.Append_management (Boundery_touch,temp_err_arc,"NO_TEST")
-        Calc_field_value_error  (temp_err_arc,error_line,"5",ErrorDictionarty["5"])
+        Calc_field_value_error  (temp_err_arc,error_line,"5",ErrorDictionary["5"])
 
         
 def point_Not_in_bankal_or_moded(parcel_all_final,ws):
@@ -408,7 +400,7 @@ def point_Not_in_bankal_or_moded(parcel_all_final,ws):
     arcpy.SelectLayerByLocation_management   ('Pnt_to_del_lyr2','INTERSECT',modad_vertex,'0.1 Meters',"NEW_SELECTION")
     arcpy.DeleteFeatures_management          ('Pnt_to_del_lyr2')
 
-    Calc_field_value_error                   (Pnt_to_del,error_point,"6",ErrorDictionarty["6"])
+    Calc_field_value_error                   (Pnt_to_del,error_point,"6",ErrorDictionary["6"])
     arcpy.Delete_management                  (bankal_vertex)
     #arcpy.Delete_management                  (modad_vertex)
 
@@ -428,7 +420,7 @@ def missing_Values_in_parcel(Parcel_makor,ws):
     arcpy.CalculateField_management(field_mising,'ERROR_Code', "\"1\"",'VB')
     arcpy.CalculateField_management(field_mising,'ERROR_Type', "\"missing values\"",'VB')
 
-    Calc_field_value_error  (field_mising,error_polygon,"1",ErrorDictionarty["1"])
+    Calc_field_value_error  (field_mising,error_polygon,"1",ErrorDictionary["1"])
 
 
 
@@ -620,7 +612,7 @@ def Find_Error_Lines(path,ws,gdb):
 
         num_found = int(str(arcpy.GetCount_management(line)))
         if num_found > 0:
-            Calc_field_value_error (line,error_line,"7",ErrorDictionarty["7"])
+            Calc_field_value_error (line,error_line,"7",ErrorDictionary["7"])
 
             print_arcpy_message("Tool Found: {} stubbern arcs".format(str(num_found)), status=2)
         else:
@@ -732,7 +724,7 @@ def Insert_needed_arc(parcel_bankal,ws,gdb):
     arcpy.SelectLayerByLocation_management ('par_bankal_to_line_lyr',"INTERSECT",Keshet,'0.1 Meters')
     arcpy.DeleteFeatures_management        ('par_bankal_to_line_lyr')
 
-    Calc_field_value_error (parce_to_line,error_line,"7",ErrorDictionarty["7"])
+    Calc_field_value_error (parce_to_line,error_line,"7",ErrorDictionary["7"])
     #arcpy.Delete_management(arc_diss)
     #arcpy.Delete_management(arc_bankal_single)
 
@@ -747,7 +739,7 @@ def double_arc(ws,gdb):
     arcpy.Intersect_analysis          ([arc],arc_inter)
     arcpy.MakeFeatureLayer_management (arc_inter,'arc_inter',"\"SHAPE_Length\" < 0.2")
     arcpy.DeleteFeatures_management   ('arc_inter')
-    Calc_field_value_error (arc_inter,Error_line,"8",ErrorDictionarty["8"])
+    Calc_field_value_error (arc_inter,Error_line,"8",ErrorDictionary["8"])
 
 
 def double_node(ws,gdb):
@@ -758,7 +750,7 @@ def double_node(ws,gdb):
 
     deleteErrorCode (Errors_Point, ["9"])
     arcpy.Intersect_analysis([node],node_inter)
-    Calc_field_value_error (node_inter,Errors_Point,"9",ErrorDictionarty["9"])
+    Calc_field_value_error (node_inter,Errors_Point,"9",ErrorDictionary["9"])
 
 
 def Parcel_data(path_after,ws,GDB):
@@ -861,7 +853,7 @@ def Calc_Area(lyr,ws):
     arcpy.MakeFeatureLayer_management  (cut_bankal,'cut_bankal_del',"\"Check\" = 'Ok'")
     arcpy.DeleteFeatures_management    ('cut_bankal_del')
 
-    Calc_field_value_error (cut_bankal,error_polygon,"10",ErrorDictionarty["10"])
+    Calc_field_value_error (cut_bankal,error_polygon,"10",ErrorDictionary["10"])
 
 
 def Check_accurancy_pracel(fc,ws):
@@ -888,7 +880,7 @@ def Check_accurancy_pracel(fc,ws):
                         in_row            = in_rows.newRow()
                         in_row.Shape      = row[1]
                         in_row.ERROR_Code = '11'
-                        in_row.ERROR_TYPE = ErrorDictionarty["11"]
+                        in_row.ERROR_TYPE = ErrorDictionary["11"]
                         in_rows.insertRow(in_row)
     del in_rows
 
@@ -905,7 +897,7 @@ def Node_not_on_parcel(parcel_all,ws,gdb):
     arcpy.SelectLayerByLocation_management ('node_final_lyr',"BOUNDARY_TOUCHES",parcel_all,'0.01 Meters',"","INVERT")
     arcpy.Select_analysis                  ('node_final_lyr',Error_temp)
 
-    Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionarty["12"])
+    Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionary["12"])
 
 
 
@@ -937,7 +929,7 @@ def Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws):
                 in_row            = up_rows.newRow()
                 in_row.Shape      = row[2]
                 in_row.ERROR_Code = '13'
-                in_row.ERROR_TYPE = ErrorDictionarty["13"]
+                in_row.ERROR_TYPE = ErrorDictionary["13"]
                 up_rows.insertRow(in_row)
     del cursor
 
@@ -971,14 +963,14 @@ def get_no_node_vertex(Paecel_all_final,gdb,ws):
             arcpy.Delete_management(parcel_all)
             arcpy.Delete_management(point)
 
-            Calc_field_value_error (Possible_Error_pts,point_Error,"2",ErrorDictionarty["2"])
+            Calc_field_value_error (Possible_Error_pts,point_Error,"2",ErrorDictionary["2"])
 
                 
 
 #            #        #      #       menu        #      #       #          #  
 
 
-ErrorDictionarty = {"1": "ערכים חסרים בשדות של שכבת חלקות",
+ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקות",
                     "2": "נקודת מודד חסרה",
                     "3": "בדיקת טופולוגיה - חורים",
                     "4": "בדיקת טופולוגיה - חפיפות",
@@ -1047,62 +1039,48 @@ if lyr_dataSource:
 
     #cbx1
     if topology_basic_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["1"],1)
-        print ("topology_basic_cbx")
-        no_holes,no_intersect = topology_basic(parcel_all_final)
-        List_to_add = [['3',ErrorDictionarty["3"],str(no_holes)],['4',ErrorDictionarty["4"],str(no_intersect)]]
-        Error_Table                           (os.path.dirname(parcel_all_final),List_to_add)
-        lyrs = arcpy.mapping.ListLayers(mxd,"*", df)
-        for lyr in lyrs:
-            if lyr.name in ["dissolve","Feature_to_poly", "Dissolve_temp"]:
-                arcpy.mapping.RemoveLayer(df,lyr)
-                if no_holes:
-                    if lyr.name == 'Topolgy_Check_holes':
-                        arcpy.mapping.RemoveLayer(df,lyr)
-                if no_intersect:
-                    if lyr.name == 'Topolgy_Check_intersect':
-                        arcpy.mapping.RemoveLayer(df,lyr)
-                                                
-        arcpy.RefreshActiveView()
+        print_arcpy_message(ErrorDictionary["3"],1)
+        print_arcpy_message(ErrorDictionary["4"],1)
+        topology_basic(parcel_all_final,ws)
 
 
     #cbx2
     if line_Not_on_parcels_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["5"],1)
+        print_arcpy_message(ErrorDictionary["5"],1)
         line_Not_on_parcels(gdb + '\\' 'PARCEL_ARC_EDIT' , parcel_all_final, ws)
 
     #cbx3
     if point_Not_in_bankal_or_moded_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["6"],1)
+        print_arcpy_message(ErrorDictionary["6"],1)
         point_Not_in_bankal_or_moded (parcel_all_final,ws)
     
 
     #cbx4
     if Missing_arc_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["7"],1)
+        print_arcpy_message(ErrorDictionary["7"],1)
         Insert_needed_arc (parcel_all_final,ws,gdb)
         Find_Error_Lines  (parcel_all_final,ws,gdb)
 
     #cbx5
     if Node_not_on_parcel_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["12"],1)
+        print_arcpy_message(ErrorDictionary["12"],1)
         Node_not_on_parcel(parcel_all_final,ws,gdb)
         pass
 
     #cbx6
     if get_no_node_vertex_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["2"],1)
+        print_arcpy_message(ErrorDictionary["2"],1)
         get_no_node_vertex(parcel_all_final,gdb,ws)
 
     #cbx6
     if double_arc_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["8"],1)
+        print_arcpy_message(ErrorDictionary["8"],1)
         double_arc(ws,gdb)
         pass
 
     #cbx7
     if double_node_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["9"],1)
+        print_arcpy_message(ErrorDictionary["9"],1)
         double_node(ws,gdb)
         pass
 
@@ -1117,24 +1095,24 @@ if lyr_dataSource:
 
     #cbx10
     if Check_area_in_tazar_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["10"],1)        
+        print_arcpy_message(ErrorDictionary["10"],1)        
         Calc_Area(parcel_all_final,ws)
         pass
 
     #cbx11
     if Gush_parcel_doubled_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["11"],1)
+        print_arcpy_message(ErrorDictionary["11"],1)
         Check_accurancy_pracel(parcel_all_final,ws)
         pass
 
     #cbx12
     if missing_Values_in_parcel_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["1"],1)
+        print_arcpy_message(ErrorDictionary["1"],1)
         missing_Values_in_parcel(parcel_all_final,ws)
 
     #cbx13
     if Parcel_gush_number_not_vaild_cbx == 'true':
-        print_arcpy_message(ErrorDictionarty["13"],1)
+        print_arcpy_message(ErrorDictionary["13"],1)
         Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws)
         pass
 
