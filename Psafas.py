@@ -3021,12 +3021,28 @@ def Sub_Processing(bankal,modad_c,points,pnt_modad,Lines,line_modad,border,copy_
         Delete_polygons_from_source (points,border)
         arcpy.Append_management     (pnt_modad,points,"NO_TEST")
 
+                # מחיקת כפילויות אם יש
+        add_field                 (points,'X_Y','TEXT')
+        with arcpy.da.UpdateCursor(points,['SHAPE@','X_Y']) as Ucursor:
+            for row in Ucursor:
+                geom = row[0]
+                for pt in geom:
+                    x_round = round(float(pt.X),1)
+                    y_round = round(float(pt.Y),1)
+                    row[1] = str(x_round) +'-'+ str(y_round)
+                    Ucursor.updateRow(row)
+                    
+        del_identical   (points,'X_Y')
+
         # insert Lines
         
         arcpy.MakeFeatureLayer_management       (Lines,'ARC_lyr')
         arcpy.SelectLayerByLocation_management  ('ARC_lyr','HAVE_THEIR_CENTER_IN',border)
         arcpy.DeleteFeatures_management         ('ARC_lyr')
         arcpy.Append_management                 (line_modad,Lines,"NO_TEST")
+
+        # Delete Duplicate Lines
+        Delete_Duplic_Line(Lines)
 
         print_arcpy_message     ("# # # # # # # F I N I S H # # # # # #",status = 1)
         sys.exit()
