@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -157,92 +158,191 @@ namespace CancelParcelEditor10_5
 
         private void f_gush_num_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 7)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
         }
 
         private void f_parcel_num_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
 
         }
 
         private void t_gush_num_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 7)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
 
         }
 
         private void t_parcel_num_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
 
         }
 
         private void talar_number_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 5)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
 
         }
 
         private void f_gush_suffix_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
             {
-                e.Handled = true;
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
+
 
         }
 
         private void t_gush_suffix_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
             {
-                e.Handled = true;
+                // same as testing for decimal above, we can check the text for digits
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
             }
             else
             {
-                e.Handled = false;
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
             }
-
         }
 
         private void cancel_Click(object sender, EventArgs e)
@@ -386,6 +486,88 @@ namespace CancelParcelEditor10_5
 
             }
 
+        }
+
+        private void f_parcel_num_e_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
+            {
+                // same as testing for decimal above, we can check the text for digits
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            }
+            else
+            {
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void t_parcel_num_e_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 3)
+            {
+                // same as testing for decimal above, we can check the text for digits
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            }
+            else
+            {
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
+            }
+
+        }
+
+        private void textBox10_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if ((sender as TextBox).Text.Count(Char.IsDigit) < 4)
+            {
+                // same as testing for decimal above, we can check the text for digits
+                if ((e.KeyChar < '0' || e.KeyChar > '9') && (e.KeyChar != '\b'))
+                {
+                    e.Handled = true;
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            }
+            else
+            {
+                if (e.KeyChar == (char)8)
+                {
+                    e.Handled = false;
+                }
+                else
+                {
+                    e.Handled = true;
+                }
+            }
         }
     }
 }
