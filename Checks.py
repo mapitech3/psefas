@@ -7,6 +7,8 @@ import json
 import sqlite3
 import pandas as pd
 import math
+import xml.etree.ElementTree as ET
+import arcpy, urllib2, urllib
 
 arcpy.env.overwriteOutput = True
 
@@ -53,7 +55,18 @@ def print_arcpy_message(msg, status=1):
         print (msg)
         arcpy.AddWarning (msg)
 
+def Get_Gdb_path():
+    MXD = arcpy.mapping.MapDocument (r'CURRENT')
+    df = MXD.activeDataFrame
+    lyrs = arcpy.mapping.ListLayers(MXD, "חלקות לעריכה", df)
+    if lyrs:
+        if lyrs[0].isFeatureLayer:
+            return lyrs[0].workspacePath
 
+def Get_Mxd_path():
+    MXD      = arcpy.mapping.MapDocument (r'CURRENT')
+    path_mxd = MXD.filePath
+    return   path_mxd
 
 def get_layer_by_fc_name(fc_name):
     mxd = arcpy.mapping.MapDocument('CURRENT')
@@ -780,7 +793,10 @@ def Parcel_data(path_after,ws,GDB):
         c.execute ("INSERT INTO Before_Table VALUES (" + str(i.PARCEL) +','+ str(i.GUSH_NUM) + ",'"+str(i.PARCEL)+"-"+str(i.GUSH_NUM)+"-"+ str(i.GUSH_SUFFIX)+"',"+str(i.GUSH_SUFFIX)+")")
 
     for i in arcpy.SearchCursor(path_after):
-        c.execute ("INSERT INTO Table_After VALUES (" + str(i.PARCEL) +','+ str(i.GUSH_NUM) + ",'"+str(i.PARCEL)+"-"+str(i.GUSH_NUM) +"-"+ str(i.GUSH_SUFFIX)+"',"+str(i.GUSH_SUFFIX)+")")
+        Gush = i.GUSH_SUFFIX
+        if not i.GUSH_SUFFIX:
+            Gush = 0
+        c.execute ("INSERT INTO Table_After VALUES (" + str(i.PARCEL) +','+ str(i.GUSH_NUM) + ",'"+str(i.PARCEL)+"-"+str(i.GUSH_NUM) +"-"+ str(Gush)+"',"+str(Gush)+")")
 
     count_before = [row for row in c.execute ('''SELECT * FROM  (SELECT *, COUNT(*) as count FROM Before_Table group by KEY) t1 WHERE t1.count > 1;''')]
     count_after  = [row for row in c.execute ('''SELECT * FROM  (SELECT *, COUNT(*) as count FROM Table_After group by KEY) t1 WHERE t1.count > 1;''')]
@@ -828,7 +844,7 @@ def Calc_Area(lyr,ws):
 
     deleteErrorCode (error_polygon, ["10"])
 
-    arcpy.MakeFeatureLayer_management      (lyr,'lyr_layer')
+    arcpy.MakeFeatureLayer_management      (lyr,'lyr_layer', "\"LEGAL_AREA\" IS NOT NULL")
     arcpy.SelectLayerByLocation_management ('lyr_layer',"INTERSECT",tazar_copy,'100 Meters')
     arcpy.Select_analysis                  ('lyr_layer',cut_bankal)
 
@@ -965,6 +981,35 @@ def get_no_node_vertex(Paecel_all_final,gdb,ws):
 
             Calc_field_value_error (Possible_Error_pts,point_Error,"2",ErrorDictionary["2"])
 
+
+
+def Call_Service(service_code_sum, gdb):
+
+    #gdb = Get_Gdb_path()
+    mxd = Get_Mxd_path()
+
+    url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CheckTalarErrors"
+
+    desc_list = dict([i.split(":") for i in ((arcpy.mapping.ListDataFrames((arcpy.mapping.MapDocument(r'CURRENT')), "*")[0]).description.split(";\r\n")) if i.split(":")[0] <> u''])
+    desc_list['gdbEdited'] = gdb
+    values = {'gdbEdited':str(desc_list['gdbEdited']),
+            'EditId':str(desc_list['EditId']),
+            'UserName':str(desc_list['UserName']),
+            'IsProd':str(desc_list['IsProd']),
+            'editProcess':str(desc_list['editProcess']),
+            'chkCode': str(service_code_sum)          
+            }
+    values_str = 'gdbEdited=' +  str(desc_list['gdbEdited']) + '&' + 'EditId=' +  str(desc_list['EditId']) + '&' + 'UserName=' +  str(desc_list['UserName']) + '&' + 'IsProd=' +  str(desc_list['IsProd']) + '&' + 'editProcess=' +  str(desc_list['editProcess']) + '&' + 'chkCode=' +  str(service_code_sum)
+    data = urllib.urlencode(values)
+
+    print_arcpy_message(url + "?" + values_str)
+    #req = urllib2.Request(url + "?" + data, None, values)
+    #print req
+    response = urllib2.urlopen(url + "?" + values_str)
+    the_page = response.read()
+    print_arcpy_message(the_page, 1)
+    return the_page
+
                 
 
 #            #        #      #       menu        #      #       #          #  
@@ -983,6 +1028,11 @@ ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקו
                     "11":"מספר חלקה כפול",
                     "12":"אי הצמדה של נקודת גבול לגבולות החלקה",
                     "13":"מספר חלקה או גוש לא תקין"}
+
+ErrorDictionary_services = {"1" : "בדיקת חלקות",
+                    "2" : "בדיקת גושים",
+                    "4": "בדיקת ערכים",
+                    "8": "בדיקת חלקות מבוטלות"}
 
             
 # # # # # # Geometry # # # # # 
@@ -1009,6 +1059,15 @@ missing_Values_in_parcel_cbx     =  arcpy.GetParameterAsText(13)
 Parcel_gush_number_not_vaild_cbx =  arcpy.GetParameterAsText(14)
 
 select_all_cbx                   = arcpy.GetParameterAsText(15)
+
+# # # # # # Services # # # # #
+
+Empty3                           =  arcpy.GetParameterAsText(16)
+
+parcel_cbx                       =  arcpy.GetParameterAsText(17)
+gush_cbx                         =  arcpy.GetParameterAsText(18)
+value_cbx                        =  arcpy.GetParameterAsText(19)
+cancelparcel_cbx                 =  arcpy.GetParameterAsText(20)
 
 ## start process...
 
@@ -1131,5 +1190,34 @@ if lyr_dataSource:
         print_arcpy_message(ErrorDictionary["13"],1)
         Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws)
         pass
+    
+    service_code_sum = 0
+    #cbx17
+    if parcel_cbx == 'true':
+        print_arcpy_message(ErrorDictionary_services["1"],1)
+        service_code_sum = service_code_sum + 1
+
+    #cbx18
+    if gush_cbx == 'true':
+        print_arcpy_message(ErrorDictionary_services["2"],1)
+        service_code_sum = service_code_sum + 2
+
+    #cbx19
+    if value_cbx == 'true':
+        print_arcpy_message(ErrorDictionary_services["4"],1)
+        service_code_sum = service_code_sum + 4
+
+    #cbx20
+    if cancelparcel_cbx == 'true':
+        print_arcpy_message(ErrorDictionary_services["8"],1)
+        service_code_sum = service_code_sum + 8
+    
+    print_arcpy_message("run service with code " + str(service_code_sum),1)
+
+    if service_code_sum > 0:
+        Call_Service(service_code_sum, gdb)
+
+
+
 
 
