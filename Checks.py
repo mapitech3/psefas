@@ -285,17 +285,18 @@ def make_polygon_to_point(layer):
         with arcpy.da.SearchCursor (layer, ['SHAPE@'])as cursor:
                 for row in cursor:
                     geom = row[0]
-                    for item in geom:
-                        for pt in item:
-                            if pt:
-                                key = str(pt.X) + '-'+str(pt.Y)
-                                if key not in exists:
-                                    in_row           = icursor.newRow ()
-                                    point            = arcpy.Point (pt.X, pt.Y)
-                                    ptGeometry       = arcpy.PointGeometry (point)
-                                    in_row.Shape     = ptGeometry
-                                    exists.append(key)
-                                    icursor.insertRow (in_row)
+                    if geom:
+                        for item in geom:
+                            for pt in item:
+                                if pt:
+                                    key = str(pt.X) + '-'+str(pt.Y)
+                                    if key not in exists:
+                                        in_row           = icursor.newRow ()
+                                        point            = arcpy.Point (pt.X, pt.Y)
+                                        ptGeometry       = arcpy.PointGeometry (point)
+                                        in_row.Shape     = ptGeometry
+                                        exists.append(key)
+                                        icursor.insertRow (in_row)
         del cursor
         return out_put
 
@@ -793,10 +794,17 @@ def Parcel_data(path_after,ws,GDB):
         c.execute ("INSERT INTO Before_Table VALUES (" + str(i.PARCEL) +','+ str(i.GUSH_NUM) + ",'"+str(i.PARCEL)+"-"+str(i.GUSH_NUM)+"-"+ str(i.GUSH_SUFFIX)+"',"+str(i.GUSH_SUFFIX)+")")
 
     for i in arcpy.SearchCursor(path_after):
-        Gush = i.GUSH_SUFFIX
+        Gush     = i.GUSH_SUFFIX
+        parcel   = i.PARCEL
+        gush_num = i.GUSH_NUM
         if not i.GUSH_SUFFIX:
             Gush = 0
-        c.execute ("INSERT INTO Table_After VALUES (" + str(i.PARCEL) +','+ str(i.GUSH_NUM) + ",'"+str(i.PARCEL)+"-"+str(i.GUSH_NUM) +"-"+ str(Gush)+"',"+str(Gush)+")")
+        if not i.PARCEL:
+            parcel = 0
+        if not i.GUSH_NUM:
+            gush_num = 0
+
+        c.execute ("INSERT INTO Table_After VALUES (" + str(parcel) +','+ str(gush_num) + ",'"+str(parcel)+"-"+str(gush_num) +"-"+ str(Gush)+"',"+str(Gush)+")")
 
     count_before = [row for row in c.execute ('''SELECT * FROM  (SELECT *, COUNT(*) as count FROM Before_Table group by KEY) t1 WHERE t1.count > 1;''')]
     count_after  = [row for row in c.execute ('''SELECT * FROM  (SELECT *, COUNT(*) as count FROM Table_After group by KEY) t1 WHERE t1.count > 1;''')]
@@ -917,7 +925,7 @@ def Node_not_on_parcel(parcel_all,ws,gdb):
 
 
 
-def Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws):
+def Find_not_exists_parcel_in_Gush(parcel_all_final,ws):
 
     Tazar         = ws + '\\' + 'PARCELS_inProc_edit_copy'
     parcel_before = ws + '\\' + 'PARCEL_ALL_EDIT_copy'
@@ -943,7 +951,8 @@ def Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws):
             key = str(row[0]) +'-'+str(row[1])
             if key in Miss_parcel_gush:
                 in_row            = up_rows.newRow()
-                in_row.Shape      = row[2]
+                if row[2]:
+                    in_row.Shape      = row[2]
                 in_row.ERROR_Code = '13'
                 in_row.ERROR_TYPE = ErrorDictionary["13"]
                 up_rows.insertRow(in_row)
@@ -983,9 +992,9 @@ def get_no_node_vertex(Paecel_all_final,gdb,ws):
 
 
 
-def Call_Service(service_code_sum, gdb):
 
-    #gdb = Get_Gdb_path()
+def Call_Service(gdb, code):
+
     mxd = Get_Mxd_path()
 
     url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CheckTalarErrors"
@@ -997,9 +1006,9 @@ def Call_Service(service_code_sum, gdb):
             'UserName':str(desc_list['UserName']),
             'IsProd':str(desc_list['IsProd']),
             'editProcess':str(desc_list['editProcess']),
-            'chkCode': str(service_code_sum)          
+            'chkCode': str(code)          
             }
-    values_str = 'gdbEdited=' +  str(desc_list['gdbEdited']) + '&' + 'EditId=' +  str(desc_list['EditId']) + '&' + 'UserName=' +  str(desc_list['UserName']) + '&' + 'IsProd=' +  str(desc_list['IsProd']) + '&' + 'editProcess=' +  str(desc_list['editProcess']) + '&' + 'chkCode=' +  str(service_code_sum)
+    values_str = 'gdbEdited=' +  str(desc_list['gdbEdited']) + '&' + 'EditId=' +  str(desc_list['EditId']) + '&' + 'UserName=' +  str(desc_list['UserName']) + '&' + 'IsProd=' +  str(desc_list['IsProd']) + '&' + 'editProcess=' +  str(desc_list['editProcess']) + '&' + 'chkCode=' +  str(code)
     data = urllib.urlencode(values)
 
     print_arcpy_message(url + "?" + values_str)
@@ -1010,6 +1019,66 @@ def Call_Service(service_code_sum, gdb):
     print_arcpy_message(the_page, 1)
     return the_page
 
+
+
+def XML_to_Table(xml_string, gdb, df):
+
+    #xml_string = xml_string.replace("-","")
+    #print xml_string
+    root = ET.fromstring(xml_string)
+    data = root.getchildren()
+
+    rows = [ParcelError for ParcelError in [ParcelErrors for ParcelErrors in data]]
+    rows = rows[0].getchildren()
+
+    if len(rows) == 0:
+        #pythonaddins.MessageBox('לא נמצאו שגיאות','INFO',0)
+        pythonaddins.MessageBox('No Errors Found','INFO',0)
+    else:
+        fields = [field.tag.replace("{http://tempuri.org/}", "") for field in rows[0].getchildren() if field.tag.replace("{http://tempuri.org/}", "") <> "ErrInfo"]
+        err_infos = rows[0][-1].getchildren()
+        for err_info in err_infos:
+            fields.append(err_info.tag.replace("{http://tempuri.org/}", ""))
+        print fields
+
+        
+        arcpy.CreateTable_management(gdb, "Errors")
+        for field in fields:
+            arcpy.AddField_management(gdb + "\\Errors", field, "TEXT")
+            
+        all_values = []
+        for row in rows:
+            fields = [field.tag.replace("{http://tempuri.org/}", "") for field in row.getchildren() if field.tag.replace("{http://tempuri.org/}", "") <> "ErrInfo"]
+            values = [field.text for field in row.getchildren() if field.text not in ['\n', '\n\n']]
+            err_infos = row[-1].getchildren()
+            for err_info in err_infos:
+                fields.append(err_info.tag.replace("{http://tempuri.org/}", ""))
+                values.append(err_info.text)
+            #print zip(fields, values)
+            all_values.append(zip(fields, values))
+
+        rows = arcpy.InsertCursor(gdb + "\\Errors")
+        for values in all_values:
+            row = rows.newRow()
+            print values
+            for row_val in values:
+                row.setValue(row_val[0], row_val[1])
+            rows.insertRow(row)
+
+
+        del row
+        del rows
+        #pythonaddins.MessageBox('Errors Found','INFO',0)
+    
+    print_arcpy_message(df.name, 1)
+    error_table = arcpy.MakeTableView_management(gdb + "\\Errors")
+    #arcpy.mapping.AddTableView(df,error_table)
+
+    #arcpy.mapping.AddLayer(df, error_table, "BOTTOM")
+
+    arcpy.RefreshActiveView()
+        #pythonaddins.MessageBox('Error table have been added to the map','INFO',0)
+        #pythonaddins.MessageBox('טבלת שגיאות נוספה למפה','INFO',0)
                 
 
 #            #        #      #       menu        #      #       #          #  
@@ -1188,7 +1257,7 @@ if lyr_dataSource:
     #cbx13
     if Parcel_gush_number_not_vaild_cbx == 'true':
         print_arcpy_message(ErrorDictionary["13"],1)
-        Fins_not_exists_parcel_ot_Gush(parcel_all_final,ws)
+        Find_not_exists_parcel_in_Gush(parcel_all_final,ws)
         pass
     
     service_code_sum = 0
@@ -1215,9 +1284,6 @@ if lyr_dataSource:
     print_arcpy_message("run service with code " + str(service_code_sum),1)
 
     if service_code_sum > 0:
-        Call_Service(service_code_sum, gdb)
-
-
-
-
+        xml_string = Call_Service(gdb, service_code_sum)
+        XML_to_Table(xml_string, gdb, df)
 
