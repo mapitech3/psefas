@@ -1049,7 +1049,7 @@ def XML_to_Table(xml_string, gdb, df):
         all_values = []
         for row in rows:
             fields = [field.tag.replace("{http://tempuri.org/}", "") for field in row.getchildren() if field.tag.replace("{http://tempuri.org/}", "") <> "ErrInfo"]
-            values = [field.text for field in row.getchildren() if field.text not in ['\n', '\n\n']]
+            values = [field.text for field in row.getchildren() if '\n' not in field.text]
             err_infos = row[-1].getchildren()
             for err_info in err_infos:
                 fields.append(err_info.tag.replace("{http://tempuri.org/}", ""))
