@@ -1071,8 +1071,8 @@ def XML_to_Table(xml_string, gdb, df):
         #pythonaddins.MessageBox('Errors Found','INFO',0)
     
     print_arcpy_message(df.name, 1)
-    error_table = arcpy.MakeTableView_management(gdb + "\\Errors")
-    #arcpy.mapping.AddTableView(df,error_table)
+    error_table = arcpy.mapping.TableView(gdb + "\\Errors")
+    arcpy.mapping.AddTableView(df,error_table)
 
     #arcpy.mapping.AddLayer(df, error_table, "BOTTOM")
 
