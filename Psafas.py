@@ -13,12 +13,12 @@ import logging
 import uuid
 import arcpy.mapping
 import sys
+import numpy as np
 
 
 def print_arcpy_message(msg, status=1):
     '''
     return a message :
-
     print_arcpy_message('sample ... text',status = 1)
     >>> [info][08:59] sample...text
     '''
@@ -3601,11 +3601,111 @@ def Check_if_Stubbern_Arc(path,path_ARC,tazar):
     arcpy.Delete_management(problem_check)
     return problems
 
+
+def dis(x1,y1,x2,y2):
+    dist = math.sqrt(((x1-x2)**2) + ((y1-y2)**2))
+    return dist
+
+
+def Layer_To_Edge_list(layer):
+
+        add_field(layer,'ERROR_TYPE')
+        data = [[row.OBJECTID,pt.X,pt.Y,str(row.ERROR_TYPE)] for row in arcpy.SearchCursor(layer) for part in row.shape for pt in part]
+
+        df            = pd.DataFrame(data,columns=["OBJECTID","X","Y","TYPE"])
+        df['index1']  = df.index
+
+
+        gb_obj = df.groupby(by = 'OBJECTID')
+
+        df_min = gb_obj.agg({'index1' : np.min})
+        df_max = gb_obj.agg({'index1' : np.max})
+
+        df_edge = pd.concat([df_min,df_max])
+
+        df2 = pd.merge(df,df_edge, how='inner', on='index1')
+
+        df_edge = df2.values.tolist()
+        df_list = df.values.tolist()
+
+        new_list = []
+        for n in range(len(df_edge)):
+                min_list = []
+                dict1    = {}
+                for i in range(len(df_list)):
+                        if df_edge[n][0] != df_list[i][0]:
+                                if df_edge[n][3] == df_list[i][3]:
+                                        dist = dis(df_edge[n][1],df_edge[n][2],data[i][1],data[i][2])
+                                        if dist != 0:
+                                                min_list.append(dist)
+                                                dict1[dist] = df_list[i]
+
+                if min_list:
+                        min_l = min(min_list)
+                        new_list.append([df_edge[n][:-1],dict1[min_l][:-1],min_l])
+                else:
+                        print "part have no match type"
+
+
+        return new_list
+
+
+def Delete_By_length(layer,dis=0.2):
+    with arcpy.da.UpdateCursor(layer,['SHAPE@LENGTH']) as ucursor:
+        for row in ucursor:
+            if row[0] < dis:
+                ucursor.deleteRow()
+    del ucursor
+
+def Connect_Lines(layer,layer_new,min_dis):
+
+        new_list = Layer_To_Edge_list(layer)
+
+        Diss = 'in_memory\Diss_layer'
+
+        ws, fc_name = os.path.split (layer_new)
+        s_r         = arcpy.Describe (layer).spatialReference
+
+        if arcpy.Exists(layer_new):
+                arcpy.Delete_management(layer_new)
+
+        line = arcpy.CreateFeatureclass_management (ws, fc_name, 'POLYLINE', spatial_reference=s_r)
+
+        add_field(line,'Type',Type = 'TEXT')
+
+        insert = arcpy.InsertCursor(line)
+
+        for i in range(len(new_list)):
+                if new_list[i][2] < min_dis:
+                        print new_list[i]
+                        points   = [arcpy.Point(new_list[i][0][1],new_list[i][0][2]),arcpy.Point(new_list[i][1][1],new_list[i][1][2])]
+                        array    = arcpy.Array(points)
+                        polyline = arcpy.Polyline(array)
+                        feat     = insert.newRow ()
+                        feat.setValue ("Type", new_list[i][0][3])
+                        feat.shape    = polyline
+                        insert.insertRow(feat)
+
+        arcpy.RepairGeometry_management(layer_new)
+
+        arcpy.Append_management                (layer,layer_new,"NO_TEST")
+        arcpy.Dissolve_management              (layer_new,Diss)
+        arcpy.MultipartToSinglepart_management (Diss,layer_new)
+
+        Delete_By_length                (layer_new,0.2)
+        add_field                       (layer_new,'ERROR_Code')
+        add_field                       (layer_new,'ERROR_TYPE')
+        arcpy.CalculateField_management (layer_new,'ERROR_TYPE',"\"Proposed Line\"", "VB")
+        arcpy.CalculateField_management (layer_new,'ERROR_Code',"\"999\"", "VB")
+
+        return layer_new
+
 def Find_Error_Lines(path,path_ARC,tazar,error_line):
 
     # temp Layers
     new_point  = gdb + '\\' + 'JunctionsParcels'
     POINT_ARC  = gdb + '\\' + 'Junctions_ARCS'
+    New_line   = gdb + '\\' + 'New_Line_Error_lines'
     temp_inter = r'in_memory\intersect'
 
 
@@ -3667,11 +3767,16 @@ def Find_Error_Lines(path,path_ARC,tazar,error_line):
 
         num_found = int(str(arcpy.GetCount_management(line)))
         if num_found > 0:
-            arcpy.Append_management(line,error_line,"NO_TEST")
-            arcpy.Append_management(line,path_ARC,"NO_TEST")
-            print_arcpy_message("Tool Found: {} stubbern arcs".format(str(num_found)), status=2)
+
+            Connect_Lines           (line,New_line,5)
+            arcpy.Append_management (New_line,error_line,"NO_TEST")
+            arcpy.Append_management (New_line,path_ARC,"NO_TEST")
+            arcpy.Delete_management (New_line)
+            print_arcpy_message     ("Tool Found: {} stubbern arcs".format(str(num_found)), status=2)
         else:
             print_arcpy_message("No stubbern arcs found", status=1)
+
+        arcpy.Delete_management(line)
 
 
 
@@ -3866,5 +3971,3 @@ if __name__ == '__main__':
         #Open_mxd(gdb,Folder)
 
 print_arcpy_message     ("# # # # # # # F I N I S H # # # # # #",status = 1)
-
-
