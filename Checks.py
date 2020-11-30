@@ -997,7 +997,8 @@ def Call_Service(gdb, code):
 
     mxd = Get_Mxd_path()
 
-    url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CheckTalarErrors"
+   # url = r"http://etm:804/CadasterEditWS/CadsterEditJobs.asmx/CheckTalarErrors"
+    url = r"http://etm:814/CadasterEditWS/CadsterEditJobs.asmx/CheckTalarErrors"
 
     desc_list = dict([i.split(":") for i in ((arcpy.mapping.ListDataFrames((arcpy.mapping.MapDocument(r'CURRENT')), "*")[0]).description.split(";\r\n")) if i.split(":")[0] <> u''])
     desc_list['gdbEdited'] = gdb
