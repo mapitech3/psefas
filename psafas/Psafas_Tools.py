@@ -142,11 +142,12 @@ def CheckIfSkipProcess(parcel_bankal,PARCELS_inProc_edit,gdb):
     Layer_Management(parcel_bankal).Select_By_Location("INTERSECT",PARCELS_inProc_edit,"",Bankal_cut)
     name_ID    = 'FID_' + os.path.basename(Bankal_cut)
     arcpy.Intersect_analysis([Bankal_cut,PARCELS_inProc_edit],intersect)
-    dic      = {i[0]:round(i[1],1) for i in arcpy.da.SearchCursor(intersect,[name_ID,'SHAPE_Area'])}
+    dic      = {i[0]:[round(i[1],1),i[2],i[3]] for i in arcpy.da.SearchCursor(intersect,[name_ID,'SHAPE_Area','GUSH_NUM','PARCEL'])}
     list_ref = [[i.OBJECTID,round(i.SHAPE_Area,1)] for i in arcpy.SearchCursor(Bankal_cut)]
     for n in list_ref:
         if dic.has_key(n[0]):
-            if n[1] == dic[n[0]]:
+            if n[1] == dic[n[0]][0] and dic[n[0]][1] == dic[n[0]][2]:
+                print (n)
                 pass
             else:
                 conti = False

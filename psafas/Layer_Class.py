@@ -312,10 +312,3 @@ class Layer_Management():
             return Out_put
 
         return Out_put
-
-
-
-
-
-
-

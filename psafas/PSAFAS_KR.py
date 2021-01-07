@@ -58,6 +58,7 @@ CURRENT_795      = r"C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_
 CURRENT_808      = r"C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89808\EditTazar89708_Copy.mxd"
 CURRENT_809      = r"C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89809\EditTazar2321_2018_Copy.mxd"
 CURRENT_89693    = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89693\EditTazar89693_Copy.mxd'
+CURRENT_2129     = r"C:\Users\medad\Desktop\Mpy\Tazar_For_run\EditTazar90809\EditTazar2129_2018.mxd"
 
 parcels_bankal_89693 = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89693\CadasterEdit_Tazar.gdb\PARCEL_ALL_EDIT'
 
@@ -79,14 +80,14 @@ parcels_bankal_784      = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_too
 parcels_bankal_795      = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89795\CadasterEdit_Tazar.gdb\PARCELS_inProc_edit'
 parcels_bankal_808      = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89808\CadasterEdit_Tazar.gdb\PARCELS_inProc_edit'
 parcels_bankal_809      = r'C:\Users\medad\python\GIStools\Work Tools\Psafas_tool\test_layers\Tazar_For_run\EditTazar89809\CadasterEdit_Tazar.gdb\PARCELS_inProc_edit'
-
+parcels_bankal_2129     = r"C:\Users\medad\Desktop\Mpy\Tazar_For_run\EditTazar90809\CadasterEdit_Tazar.gdb\PARCELS_inProc_edit"
 
 
 
 scriptPath = os.path.abspath(__file__)
 Scripts    = os.path.dirname(scriptPath)
 ToolShare  = os.path.dirname(Scripts)
-Scratch    = ToolShare + "\\Scratch1"
+Scratch    = ToolShare + "\\Scratch4"
 ToolData   = ToolShare + "\\ToolData"
 
 parcels_bankal         = arcpy.GetParameterAsText(0)
@@ -98,11 +99,12 @@ CURRENT                = r'CURRENT'
 
 # Big  = [parcels_bankal_795,CURRENT_795],[parcels_bankal_677,CURRENT_677]
                       
-parcels_bankal_list = [[parcels_bankal_678,CURRENT_678] ,[parcels_bankal_891,CURRENT_891],[parcels_bankal_704,CURRENT_704],[parcels_bankal_705,CURRENT_705],\
-                        [parcels_bankal_708,CURRENT_708],[parcels_bankal_690,CURRENT_690],[parcels_bankal_700,CURRENT_700],[parcels_bankal_709,CURRENT_709],\
-                        [parcels_bankal_702,CURRENT_702],[parcels_bankal_695,CURRENT_695],[parcels_bankal_699,CURRENT_699],[parcels_bankal_784,CURRENT_784],\
-                        [parcels_bankal_89693,CURRENT_89693],[parcels_bankal_809,CURRENT_809]]
+# parcels_bankal_list = [[parcels_bankal_678,CURRENT_678] ,[parcels_bankal_891,CURRENT_891],[parcels_bankal_704,CURRENT_704],[parcels_bankal_705,CURRENT_705],\
+#                         [parcels_bankal_708,CURRENT_708],[parcels_bankal_690,CURRENT_690],[parcels_bankal_700,CURRENT_700],[parcels_bankal_709,CURRENT_709],\
+#                         [parcels_bankal_702,CURRENT_702],[parcels_bankal_695,CURRENT_695],[parcels_bankal_699,CURRENT_699],[parcels_bankal_784,CURRENT_784],\
+#                         [parcels_bankal_89693,CURRENT_89693],[parcels_bankal_809,CURRENT_809]]
 
+parcels_bankal_list = [[parcels_bankal_2129,CURRENT_2129]]
 
 
 print_arcpy_message     ("# # # # # # # S T A R T # # # # # #",status = 1)
