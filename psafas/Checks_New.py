@@ -732,7 +732,7 @@ if select_all_cbx == 'true':
 
 
 lyr_dataSource = get_layer_by_fc_name('Parcel_all_edit')
-print (lyr_dataSource)
+arcpy.AddMessage(lyr_dataSource)
 
 if lyr_dataSource:
     # extract from script location
@@ -764,8 +764,6 @@ node_all    = gdb + '\\' + 'PARCEL_NODE_EDIT'
 node_modad    = gdb + '\\' + 'POINTS_inProc_edit'
 parcel_modad  = gdb + '\\' + 'PARCELS_inProc_edit'
 arc_modad     = gdb + '\\' + 'LINES_inProc_edit'
-
-ws             = Scratch + '\\' + 'Tazar_89700.gdb'
 
 
 layer_parcel = Layer_Engine(parcel_all)
