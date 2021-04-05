@@ -28,6 +28,23 @@ ErrorDictionary_services = {"1" : "בדיקת חלקות",
                     "4": "בדיקת ערכים",
                     "8": "בדיקת חלקות מבוטלות"}
 
+ErrorDictionary = {"1": "a", # test
+                    "2": "b",
+                    "3": "c",
+                    "4": "s",
+                    "5": "f",
+                    "6": "v",
+                    "7": "c",
+                    "8": "x",
+                    "9": "z",
+                    "10":"m",
+                    "11":"l",
+                    "12":"ll",
+                    "13":"q",
+                    "14":"w"}
+
+
+
 def ShapeType(desc):
     
     if str(desc.shapeType) == 'Point':
