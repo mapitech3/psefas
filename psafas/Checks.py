@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import arcpy,math
+import arcpy,math,uuid
 import pandas as pd
 import numpy as np
 import sqlite3,json,os,random,sys
@@ -16,7 +16,7 @@ ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקו
                     "3": "בדיקת טופולוגיה - חורים",
                     "4": "בדיקת טופולוגיה - חפיפות",
                     "5": "אי התאמה של חזית עם גבול חלקה",
-                    "6": "נקודה חדשה שנוצרה",
+                    "6": "נקודת מודד ללא וורטקס מבנקל",
                     "7": "חזית חסרה",
                     "8": "חזית כפולה",
                     "9": "נקודת גבול כפולה",
@@ -36,13 +36,13 @@ ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
                     "3": "topology test - Holes",
                     "4": "topology test - Intersect",
                     "5": "arc and parcel are not overlap",
-                    "6": "New point, not in modad nor bankal",
+                    "6": "node_not_on_vertex",
                     "7": "missing arc",
                     "8": "overlap arc",
                     "9": "double point",
                     "10":"area not standard",
                     "11":"double parcel ID",
-                    "12":"Point not on arc",
+                    "12":"Point not on parcel border",
                     "13":"Number of parcel or Gush are not Invalid",
                     "14":"Parcel changed in the border of AOI"}
 
@@ -165,8 +165,8 @@ def Delete_polygons(fc,del_layer,Out_put):
 
 def Feature_to_polygon(path,Out_put):
 
-
-    path_diss = arcpy.Dissolve_management(path,r'in_memory\Dissolve_temp')
+    dif_name  = str(uuid.uuid4())[::5]
+    path_diss = arcpy.Dissolve_management(path,r'in_memory\Dissolve_temp' + dif_name)
 
 
     def Split_List_by_value(list1,value,del_value = False):
@@ -239,11 +239,12 @@ def deleteErrorCode(layer, list_code):
 def topology_basic(final,ws):
 
     memory        = r'in_memory'
-    Diss          = memory + '\\' + 'dissolve'
-    feat_to_poly  = memory + '\\' + 'Feature_to_poly'
-    topo_holes    = memory + '\\' + 'Topolgy_Check_holes'
-    topo_inter    = memory + '\\' + 'Topolgy_Check_intersect'
-    error_polygon = ws     + '\\' + 'Errors_polygon'
+    random_name   = str(uuid.uuid4())[::5]
+    Diss          = memory + '\\' + 'dissolve'                + random_name
+    feat_to_poly  = memory + '\\' + 'Feature_to_poly'         + random_name
+    topo_holes    = memory + '\\' + 'Topolgy_Check_holes'     + random_name
+    topo_inter    = memory + '\\' + 'Topolgy_Check_intersect' + random_name
+    error_polygon = ws     + '\\' + 'Errors_polygon'          
 
     deleteErrorCode (error_polygon, ["3"])
     deleteErrorCode (error_polygon, ["4"])
@@ -281,12 +282,14 @@ def line_Not_on_parcels(ARC_bankal,Parcel_makor, ws):
     # # Check Arc points\ID
     Boundery_touch = 'in_memory\\Boundery_touch'
     error_line     = ws + "\\Errors_Line"
+    random_name    = str(uuid.uuid4())[::5]
+    feat_lyr       = 'ARC_bankal_lyr' + random_name
 
     deleteErrorCode                        (error_line, ["5"])
 
-    arcpy.MakeFeatureLayer_management       (ARC_bankal.layer,'ARC_bankal_lyr')
-    arcpy.SelectLayerByLocation_management  ('ARC_bankal_lyr',"SHARE_A_LINE_SEGMENT_WITH",Parcel_makor.layer,'0.1 Meters',"NEW_SELECTION","INVERT")
-    arcpy.Select_analysis                   ('ARC_bankal_lyr',Boundery_touch)
+    arcpy.MakeFeatureLayer_management       (ARC_bankal.layer,feat_lyr)
+    arcpy.SelectLayerByLocation_management  (feat_lyr ,"SHARE_A_LINE_SEGMENT_WITH",Parcel_makor.layer,'0.1 Meters',"NEW_SELECTION","INVERT")
+    arcpy.Select_analysis                   (feat_lyr ,Boundery_touch)
 
     arcpy.RepairGeometry_management (Boundery_touch)
 
@@ -392,8 +395,9 @@ def generateCurves(fc):
 
 def Insert_needed_arc(parcel_bankal,arc_bankal,Keshet,ws):
 
-    arc_diss          = r'in_memory'  + '\\' + 'arc__Diss'
-    parce_to_line     = r'in_memory'  + '\\' + 'parcel_to_line'
+    random_name       = str(uuid.uuid4())[::5]
+    arc_diss          = r'in_memory'  + '\\' + 'arc__Diss'      + random_name
+    parce_to_line     = r'in_memory'  + '\\' + 'parcel_to_line' + random_name
     error_line        = ws  + '\\' + 'Errors_Line'
 
     deleteErrorCode                        (error_line, ["7"])
@@ -412,9 +416,10 @@ def Insert_needed_arc(parcel_bankal,arc_bankal,Keshet,ws):
 
     arcpy.RepairGeometry_management        (parce_to_line)
     # delete lines that on polygone with holes
-    arcpy.MakeFeatureLayer_management      (parce_to_line,'parce_to_line_lyr')
-    arcpy.SelectLayerByLocation_management ('parce_to_line_lyr',"SHARE_A_LINE_SEGMENT_WITH",parcel_bankal.layer,"0.01 Meters",'','INVERT')
-    arcpy.DeleteFeatures_management        ('parce_to_line_lyr')
+    feat_lyr = 'par_to_line_lyr' + str(uuid.uuid4())[::5]
+    arcpy.MakeFeatureLayer_management      (parce_to_line,feat_lyr)
+    arcpy.SelectLayerByLocation_management (feat_lyr,"SHARE_A_LINE_SEGMENT_WITH",parcel_bankal.layer,"0.01 Meters",'','INVERT')
+    arcpy.DeleteFeatures_management        (feat_lyr)
 
     del_geom(parce_to_line)
 
@@ -433,10 +438,11 @@ def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,ws):
     Error_temp = r'in_memory' + '\\' + 'Error_temp'
 
     deleteErrorCode (node_error, ["12"])
+    feat_name = 'node_final_lyr' + str(uuid.uuid4())[::5]
 
-    arcpy.MakeFeatureLayer_management      (PARCEL_NODE_EDIT,'node_final_lyr')
-    arcpy.SelectLayerByLocation_management ('node_final_lyr',"BOUNDARY_TOUCHES",parcel_all.layer,'0.01 Meters',"","INVERT")
-    arcpy.Select_analysis                  ('node_final_lyr',Error_temp)
+    arcpy.MakeFeatureLayer_management      (PARCEL_NODE_EDIT,feat_name)
+    arcpy.SelectLayerByLocation_management (feat_name ,"BOUNDARY_TOUCHES",parcel_all.layer,'0.01 Meters',"","INVERT")
+    arcpy.Select_analysis                  (feat_name ,Error_temp)
 
     Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionary["12"])
 
@@ -447,15 +453,30 @@ def vertex_not_on_node(layer_parcel,layer_node,parcel_modad,ws):
     deleteErrorCode (node_error, ["2"])
 
     uniq       = layer_parcel.compare_vertexs(layer_node.set_)
+    print_arcpy_message (uniq)
     Error_temp = Convert_list_to_point(uniq)
 
     Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
     Calc_field_value_error (Error_temp,node_error,"2",ErrorDictionary["2"])
 
+def node_not_on_vertex(layer_parcel,layer_node,parcel_modad,ws):
+
+    node_error = ws + '\\' + 'Errors_Point'
+
+    deleteErrorCode (node_error, ["6"])
+
+    uniq       = layer_node.compare_vertexs(layer_parcel.set_)
+    print_arcpy_message (uniq)
+    Error_temp = Convert_list_to_point(uniq)
+
+    Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
+    Calc_field_value_error (Error_temp,node_error,"6",ErrorDictionary["6"])
+
+
 def double_arc(ws,arc):
 
     Error_line = ws            + '\\' + 'Errors_Line'
-    arc_inter  = r'in_memory'  + '\\' + 'arc_intersect'
+    arc_inter  = r'in_memory'  + '\\' + 'arc_intersect' + str(uuid.uuid4())[::5]
 
     deleteErrorCode                   (Error_line, ["8"])
     arcpy.Intersect_analysis          ([arc],arc_inter)
@@ -467,7 +488,7 @@ def double_arc(ws,arc):
 def double_node(ws,node):
 
     Errors_Point = ws            + '\\' + 'Errors_Point'
-    node_inter   = r'in_memory'  + '\\' + 'node_inter'
+    node_inter   = r'in_memory'  + '\\' + 'node_inter' + str(uuid.uuid4())[::5]
 
     deleteErrorCode          (Errors_Point, ["9"])
     arcpy.Intersect_analysis ([node],node_inter)
@@ -554,9 +575,13 @@ def Calc_Area(lyr,ws):
 
     deleteErrorCode (error_polygon, ["10"])
 
-    arcpy.MakeFeatureLayer_management      (lyr,'lyr_layer', "\"LEGAL_AREA\" IS NOT NULL")
-    arcpy.SelectLayerByLocation_management ('lyr_layer',"INTERSECT",tazar_copy,'100 Meters')
-    arcpy.Select_analysis                  ('lyr_layer',cut_bankal)
+    feat_name = 'lyr_layer' + str(uuid.uuid4())[::5]
+    if arcpy.Exists(cut_bankal):
+        arcpy.Delete_management(cut_bankal)
+
+    arcpy.MakeFeatureLayer_management      (lyr,feat_name, "\"LEGAL_AREA\" IS NOT NULL")
+    arcpy.SelectLayerByLocation_management (feat_name,"INTERSECT",tazar_copy,'100 Meters')
+    arcpy.Select_analysis                  (feat_name,cut_bankal)
 
         
     fields = [["GAP", "DOUBLE"],["delta", "DOUBLE"],["Check", "TEXT"]]
@@ -575,8 +600,9 @@ def Calc_Area(lyr,ws):
             up_cursor.updateRow (row)
     del up_cursor
 
-    arcpy.MakeFeatureLayer_management  (cut_bankal,'cut_bankal_del',"\"Check\" = 'Ok'")
-    arcpy.DeleteFeatures_management    ('cut_bankal_del')
+    feat_lyr = 'cut_bankal_del' + str(uuid.uuid4())[::5]
+    arcpy.MakeFeatureLayer_management  (cut_bankal, feat_lyr,"\"Check\" = 'Ok'")
+    arcpy.DeleteFeatures_management    (feat_lyr)
 
     Calc_field_value_error (cut_bankal,error_polygon,"10",ErrorDictionary["10"])
 
@@ -661,16 +687,17 @@ def Find_not_exists_parcel_in_Gush(parcel_all_final,ws):
 
 def get_envelop_area(path,num):
     # Temp_layers
-    path_diss = r'in_memory\dissolve'  + str(num)
-    New_Line  = r'in_memory\New_Line'  + str(num)
-    cut_layer = r'in_memory\cut_layer' + str(num)
+    path_diss = r'in_memory\dissolve'  + str(uuid.uuid4())[::5] + str(num)
+    New_Line  = r'in_memory\New_Line'  + str(uuid.uuid4())[::5] + str(num)
+    cut_layer = r'in_memory\cut_layer' + str(uuid.uuid4())[::5] + str(num)
 
+    feat_name = 'path_lyr' + str(uuid.uuid4())[::5] + str(num)
     # procssing 
     arcpy.Dissolve_management              (path,path_diss)
     polygon_to_line                        (path_diss,New_Line)
-    arcpy.MakeFeatureLayer_management      (path,'path_lyr' + str(num))
-    arcpy.SelectLayerByLocation_management ('path_lyr'+ str(num),"BOUNDARY_TOUCHES",New_Line)
-    arcpy.Select_analysis                  ('path_lyr'+ str(num),cut_layer)
+    arcpy.MakeFeatureLayer_management      (path, feat_name)
+    arcpy.SelectLayerByLocation_management (feat_name, "BOUNDARY_TOUCHES",New_Line)
+    arcpy.Select_analysis                  (feat_name, cut_layer)
 
     data = {int(row[0]):row[1] for row in arcpy.da.SearchCursor(cut_layer,['PARCEL_ID','SHAPE@'])}
 
@@ -779,20 +806,21 @@ line_Not_on_parcels_cbx          = arcpy.GetParameterAsText(2)
 Missing_arc_cbx                  = arcpy.GetParameterAsText(3)
 Node_not_on_parcel_cbx           = arcpy.GetParameterAsText(4)
 vertex_not_on_node_cbx           = arcpy.GetParameterAsText(5)
-double_arc_cbx                   = arcpy.GetParameterAsText(6)
-double_node_cbx                  = arcpy.GetParameterAsText(7)
-Gush_parcel_doubled_cbx          = arcpy.GetParameterAsText(8)
+node_not_on_vertex_cbx           = arcpy.GetParameterAsText(6)
+double_arc_cbx                   = arcpy.GetParameterAsText(7)
+double_node_cbx                  = arcpy.GetParameterAsText(8)
 Found_bad_parcel_around_AOI_cbx  = arcpy.GetParameterAsText(9)
 
 # # # # # # Table # # # # #
 Empty                            =  arcpy.GetParameterAsText(10)
 
-Parcel_data_cbx                  = arcpy.GetParameterAsText(11)
-Check_area_in_tazar_cbx          = arcpy.GetParameterAsText(12)
-missing_Values_in_parcel_cbx     = arcpy.GetParameterAsText(13)
-Parcel_gush_number_not_vaild_cbx = arcpy.GetParameterAsText(14)
+Gush_parcel_doubled_cbx          = arcpy.GetParameterAsText(11)
+Parcel_data_cbx                  = arcpy.GetParameterAsText(12)
+Check_area_in_tazar_cbx          = arcpy.GetParameterAsText(13)
+missing_Values_in_parcel_cbx     = arcpy.GetParameterAsText(14)
+Parcel_gush_number_not_vaild_cbx = arcpy.GetParameterAsText(15)
 
-select_all_cbx                   = arcpy.GetParameterAsText(15)
+select_all_cbx                   = arcpy.GetParameterAsText(16)
 
 
 if select_all_cbx == 'true':
@@ -801,6 +829,7 @@ if select_all_cbx == 'true':
     Missing_arc_cbx                  = 'true'
     Node_not_on_parcel_cbx           = 'true'
     vertex_not_on_node_cbx           = 'true'
+    node_not_on_vertex_cbx           = 'true'
     double_arc_cbx                   = 'true'
     double_node_cbx                  = 'true'
     Parcel_data_cbx                  = 'true'
@@ -876,6 +905,10 @@ if Node_not_on_parcel_cbx == 'true':
 if vertex_not_on_node_cbx == 'true':
     print_arcpy_message (ErrorDictionary["2"],1)
     vertex_not_on_node  (layer_parcel,layer_node,parcel_modad,ws)
+
+if node_not_on_vertex_cbx == 'true':
+    print_arcpy_message (ErrorDictionary["6"],1)
+    node_not_on_vertex  (layer_parcel,layer_node,parcel_modad,ws)
 
 if double_arc_cbx == 'true':
     print_arcpy_message (ErrorDictionary["8"],1)
