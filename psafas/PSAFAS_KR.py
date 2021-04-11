@@ -140,16 +140,19 @@ if Continue:
 
 CheckResultsIsOK(AOI_best,tazar_border,5)
 
+Delete_small_double_parcel    (AOI_best)
 fix_holes_Overlaps_By_Length  (AOI_best,tazar_border   ,AOI_Fix) 
 stubborn_parts                (AOI_Fix,parcel_bankal_c,parcel_modad_c,AOI_final,Curves)
 Update_Layer_Curves_By_ID     (AOI_final,parcel_modad_c,Curves)
+
+CheckResultsIsOK              (AOI_final,tazar_border,6)
 
 fix_tolerance                 (AOI_final,tazar_border)
 get_no_node_vertex            (AOI_final,tazar_border,point_modad_c,Point_bankal_Cut)
 Delete_curves_out_AOI         (AOI_final,parcel_bankal)
 Fix_Multi_part_Bankal         (AOI_final,tazar_border,parcel_Bankal_cut) # מתקן חלקות רחוקות שנפגעו בגלל שיש בהן חורים
 Update_Polygons               (AOI_final,parcel_modad_c)
-CheckResultsIsOK              (AOI_final,tazar_border,6)                # בדיקת סופית, כמה חורים נשארו
+CheckResultsIsOK              (AOI_final,tazar_border,7)                # בדיקת סופית, כמה חורים נשארו
 
 #  #  #  #  #  # # Prepare Insert to Razaf  #  #  #  #  #  #  # 
 print_arcpy_message ("  #   #   #    # Preper data For Insert  #   #   #   #  ")

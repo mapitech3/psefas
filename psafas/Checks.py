@@ -622,6 +622,7 @@ def Check_accurancy_pracel(fc,ws):
 
     x = [row[0] for row in arcpy.da.SearchCursor (fc,["KEY"])]
 
+    arcpy.RemoveSpatialIndex_management(Error_Polygon)
     in_rows = arcpy.InsertCursor(Error_Polygon)
     with arcpy.da.SearchCursor(fc,["KEY",'SHAPE@']) as cursor:
             for row in cursor:

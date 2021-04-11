@@ -10,6 +10,7 @@ from Basic_Func    import *
 from Advanced_Func import *
 
 '''
+Delete_small_double_parcel
 NewGushim
 CheckIfSkipProcess
 Sub_Processing
@@ -35,6 +36,26 @@ Create_Line_AOI
 Find_stubbern_lines
 dissolve_parts             #  not in use
 '''
+
+def Delete_small_double_parcel(path):
+
+    Multi_to_single(path)
+
+    data       = [[str(row[0]) +'-' + str(row[1])+ '-' + str(row[2]),row[3]] for row in arcpy.da.SearchCursor(path,["GUSH_NUM","GUSH_SUFFIX","PARCEL","SHAPE@AREA",])]
+    df         = pd.DataFrame(data = data,columns = ['KEY','area'])
+    df['Rank'] = df.groupby('KEY')['area'].rank(method='dense',ascending=False)
+    to_del     = {i[1]:i[0] for i in df[df['Rank'] > 1].values.tolist()}
+    len_del    = len(to_del)
+
+    if len_del > 0:
+        print_arcpy_message("Found: {} parcels that are double parcels, trying to fix it".format(str(len_del)),2)
+        with arcpy.da.UpdateCursor(path,["GUSH_NUM","GUSH_SUFFIX","PARCEL","SHAPE@AREA"]) as Ucursor:
+            for row in Ucursor:
+                key = row[3]
+                if to_del.get(key):
+                    if to_del[key] == str(row[0]) +'-' + str(row[1])+ '-' + str(row[2]):
+                        Ucursor.deleteRow()
+
 
 def NewGushim(parcel_tazar, parcel_all_bankal,layer_f):
 
@@ -425,7 +446,7 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
                                     if this_vertex:
                                             if this_vertex[0][0][8] == None:
                                                     if this_vertex[0][0][7] < 0.7 and this_vertex[0][0][6] == 1:
-                                                        print "pseodo: delete vertex"
+                                                        print ("pseodo: delete vertex")
                                                     else:
                                                             #print "pseodo, but important: keep the vertex"
                                                             point = pt
@@ -579,7 +600,7 @@ def add_err_pts_to_mxd(our_gdb, folder, data_source,CURRENT):
                 try:
                     mxd.findAndReplaceWorkspacePaths(data_source, our_gdb)
                 except:
-                    print "Coudnt replace Data Source"
+                    print ("Coudnt replace Data Source")
         arcpy.RefreshActiveView()
 
 
@@ -590,9 +611,9 @@ def Parcel_data(path_after,path_before,copy_tazar):
         for i in range(len(data1)):
             if data1[i][1] == data1[i-1][1]:
                 if data1[i][0]+1 == data1[i-1][0]:
-                    print "its ok ,in {} value is equal with: {}".format(data1[i][2],data1[i-1][2])
+                    print ("its ok ,in {} value is equal with: {}").format(data1[i][2],data1[i-1][2])
                 else:
-                    print "in {} value is not equal with: {}".format(data1[i][2],data1[i-1][2])
+                    print ("in {} value is not equal with: {}").format(data1[i][2],data1[i-1][2])
             else:
                 pass
 
