@@ -44,7 +44,7 @@ def Delete_small_double_parcel(path):
     data       = [[str(row[0]) +'-' + str(row[1])+ '-' + str(row[2]),row[3]] for row in arcpy.da.SearchCursor(path,["GUSH_NUM","GUSH_SUFFIX","PARCEL","SHAPE@AREA",])]
     df         = pd.DataFrame(data = data,columns = ['KEY','area'])
     df['Rank'] = df.groupby('KEY')['area'].rank(method='dense',ascending=False)
-    to_del     = {i[1]:i[0] for i in df[df['Rank'] > 1].values.tolist()}
+    to_del     = {i[1]:i[0] for i in df[df['Rank'] > 1].values.tolist() if i[1] < 200} # only slivers smaller then 200 
     len_del    = len(to_del)
 
     if len_del > 0:
