@@ -437,7 +437,7 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
             poly_vertices = [r for r in distance_vertices if r[0][5] == oid]
             for part in geometry:
                     for pt in part:
-                            if str(type(pt)) <> "<type 'NoneType'>":
+                            if str(type(pt)) != "<type 'NoneType'>":
                                     num_point = 0
                                     #print str(pt.X) + "--" + str(pt.Y)
                                     this_x = float("{0:.2f}".format(pt.X))
@@ -465,7 +465,7 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
                                             first_point = point
                                     num_point = num_point + 1
             polygon = PtsToPolygon(pts)
-            if pts[0] <> pts[-1] and first_point:
+            if pts[0] != pts[-1] and first_point:
                     #print "ooops.... - polygon not closed"
                     pts.append(first_point)
             row.Shape       = polygon
@@ -575,9 +575,9 @@ def ChangeFieldNames(parcel,line,point):
                         arcpy.CalculateField_management  (lyr, field[1]  , "["+field[0]+"]"  , "VB", "")
 
     try:
-        arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in !ParcelName! if i.isdigit()]))", "PYTHON" ) 
+        arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in str(!PARCEL_FINAL!) if i.isdigit()]))", "PYTHON" ) 
     except:
-        arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in !PARCEL_FINAL! if i.isdigit()]))", "PYTHON" ) 
+        arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in !ParcelName! if i.isdigit()]))", "PYTHON" ) 
 
 
 def add_err_pts_to_mxd(our_gdb, folder, data_source,CURRENT):
