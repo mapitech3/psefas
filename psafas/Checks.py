@@ -16,7 +16,7 @@ ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקו
                     "3": "בדיקת טופולוגיה - חורים",
                     "4": "בדיקת טופולוגיה - חפיפות",
                     "5": "אי התאמה של חזית עם גבול חלקה",
-                    "6": "נקודת מודד ללא וורטקס מבנקל",
+                    "6": "וורטקס ללא נקודה מהמודד",
                     "7": "חזית חסרה",
                     "8": "חזית כפולה",
                     "9": "נקודת גבול כפולה",
@@ -36,7 +36,7 @@ ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
                     "3": "topology test - Holes",
                     "4": "topology test - Intersect",
                     "5": "arc and parcel are not overlap",
-                    "6": "node_not_on_vertex",
+                    "6": "vertex without point from modad",
                     "7": "missing arc",
                     "8": "overlap arc",
                     "9": "double point",
@@ -280,9 +280,10 @@ def line_Not_on_parcels(ARC_bankal,Parcel_makor, ws):
     #  # cuting layer , to work on less data # #
 
     # # Check Arc points\ID
-    Boundery_touch = 'in_memory\\Boundery_touch'
-    error_line     = ws + "\\Errors_Line"
+
     random_name    = str(uuid.uuid4())[::5]
+    Boundery_touch = 'in_memory\\Boundery_touch' + random_name
+    error_line     = ws + "\\Errors_Line"
     feat_lyr       = 'ARC_bankal_lyr' + random_name
 
     deleteErrorCode                        (error_line, ["5"])
@@ -332,10 +333,6 @@ class Layer_Engine():
             self.data_shape          = [str(round(i[-1].centroid.X,3)) + '-' + str(round(i[-1].centroid.Y,3)) for i in self.data if i[-1]]
             self.set_                = set(self.data_shape)
             self.df_shape            = pd.DataFrame(data = self.data_shape , columns = ['SHAPE'])
-
-    def compare_vertexs(self,set_Compare):
-        uniq = [[float(i.split('-')[0]),float(i.split('-')[1])] for i in list(self.set_ - set_Compare)]
-        return uniq
 
 
 def Convert_list_to_point(list_):
@@ -446,31 +443,36 @@ def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,ws):
 
     Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionary["12"])
 
-def vertex_not_on_node(layer_parcel,layer_node,parcel_modad,ws):
+def vertex_without_modad_point(layer_parcel,node_modad,ws):
+
+    node_error = ws + '\\' + 'Errors_Point'
+
+    pts =  layer_parcel.set_ - node_modad.set_
+
+    deleteErrorCode (node_error, ["6"])
+
+    pts_list = [[i.split('-')[0],i.split('-')[1]] for i in list(pts)]
+    Error_temp = Convert_list_to_point(pts_list)
+
+    Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
+    Calc_field_value_error (Error_temp,node_error,"6",ErrorDictionary["6"])
+
+
+
+def missing_modad_point(layer_node,parcel_modad,node_modad,ws):
 
     node_error = ws + '\\' + 'Errors_Point'
 
     deleteErrorCode (node_error, ["2"])
 
-    uniq       = layer_parcel.compare_vertexs(layer_node.set_)
-    print_arcpy_message (uniq)
-    Error_temp = Convert_list_to_point(uniq)
+    check = layer_node.set_ - node_modad.set_
+
+    pts_list = [[i.split('-')[0],i.split('-')[1]] for i in list(check)]
+
+    Error_temp = Convert_list_to_point(pts_list)
 
     Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
     Calc_field_value_error (Error_temp,node_error,"2",ErrorDictionary["2"])
-
-def node_not_on_vertex(layer_parcel,layer_node,parcel_modad,ws):
-
-    node_error = ws + '\\' + 'Errors_Point'
-
-    deleteErrorCode (node_error, ["6"])
-
-    uniq       = layer_node.compare_vertexs(layer_parcel.set_)
-    print_arcpy_message (uniq)
-    Error_temp = Convert_list_to_point(uniq)
-
-    Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
-    Calc_field_value_error (Error_temp,node_error,"6",ErrorDictionary["6"])
 
 
 def double_arc(ws,arc):
@@ -806,8 +808,8 @@ topology_basic_cbx               = arcpy.GetParameterAsText(1)
 line_Not_on_parcels_cbx          = arcpy.GetParameterAsText(2)
 Missing_arc_cbx                  = arcpy.GetParameterAsText(3)
 Node_not_on_parcel_cbx           = arcpy.GetParameterAsText(4)
-vertex_not_on_node_cbx           = arcpy.GetParameterAsText(5)
-node_not_on_vertex_cbx           = arcpy.GetParameterAsText(6)
+vertex_without_modad_point_cbx   = arcpy.GetParameterAsText(5)
+missing_modad_point_cbx          = arcpy.GetParameterAsText(6)
 double_arc_cbx                   = arcpy.GetParameterAsText(7)
 double_node_cbx                  = arcpy.GetParameterAsText(8)
 Found_bad_parcel_around_AOI_cbx  = arcpy.GetParameterAsText(9)
@@ -829,8 +831,8 @@ if select_all_cbx == 'true':
     line_Not_on_parcels_cbx          = 'true'
     Missing_arc_cbx                  = 'true'
     Node_not_on_parcel_cbx           = 'true'
-    vertex_not_on_node_cbx           = 'true'
-    node_not_on_vertex_cbx           = 'true'
+    vertex_without_modad_point_cbx   = 'true'
+    missing_modad_point_cbx          = 'true'
     double_arc_cbx                   = 'true'
     double_node_cbx                  = 'true'
     Parcel_data_cbx                  = 'true'
@@ -877,12 +879,16 @@ parcel_modad  = gdb + '\\' + 'PARCELS_inProc_edit'
 arc_modad     = gdb + '\\' + 'LINES_inProc_edit'
 
 
-layer_parcel = Layer_Engine(parcel_all)
-layer_arc    = Layer_Engine(arc_all)
-layer_node   = Layer_Engine(node_all)
+layer_parcel     = Layer_Engine(parcel_all)
+layer_arc        = Layer_Engine(arc_all)
+layer_node       = Layer_Engine(node_all)
 
-layer_parcel.Extract_shape()
-layer_node.Extract_shape()
+lyr_node_modad   = Layer_Engine(node_modad)
+
+layer_parcel.Extract_shape  ()
+layer_node.Extract_shape    ()
+lyr_node_modad.Extract_shape()
+
 
 Keshet = generateCurves(layer_parcel.layer)
 
@@ -903,13 +909,13 @@ if Node_not_on_parcel_cbx == 'true':
     print_arcpy_message (ErrorDictionary["12"],1)
     Node_not_on_parcel  (layer_parcel,layer_node.layer,ws)
 
-if vertex_not_on_node_cbx == 'true':
-    print_arcpy_message (ErrorDictionary["2"],1)
-    vertex_not_on_node  (layer_parcel,layer_node,parcel_modad,ws)
-
-if node_not_on_vertex_cbx == 'true':
+if vertex_without_modad_point_cbx == 'true':
     print_arcpy_message (ErrorDictionary["6"],1)
-    node_not_on_vertex  (layer_parcel,layer_node,parcel_modad,ws)
+    vertex_without_modad_point  (layer_parcel,lyr_node_modad,ws)
+
+if missing_modad_point_cbx == 'true':
+    print_arcpy_message (ErrorDictionary["2"],1)
+    missing_modad_point (layer_node,parcel_modad,lyr_node_modad,ws)
 
 if double_arc_cbx == 'true':
     print_arcpy_message (ErrorDictionary["8"],1)
