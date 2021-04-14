@@ -11,48 +11,6 @@ class ButtonClass1(object):
         self.enabled = True
         self.checked = False
     def onClick(self):
-        def print_arcpy_message(msg,status = 1):
-            '''
-            return a message :
-            
-            print_arcpy_message('sample ... text',status = 1)
-            [info][08:59] sample...text
-            '''
-            msg = str(msg)
-            
-            if status == 1:
-                prefix = '[info]'
-                msg = prefix + str(datetime.datetime.now()) +"  "+ msg
-                # print (msg)
-                arcpy.AddMessage(msg)
-                
-            if status == 2 :
-                prefix = '[!warning!]'
-                msg = prefix + str(datetime.datetime.now()) +"  "+ msg
-                print (msg)
-                arcpy.AddWarning(msg)
-                    
-            if status == 0 :
-                prefix = '[!!!err!!!]'
-                
-                msg = prefix + str(datetime.datetime.now()) +"  "+ msg
-                print (msg)
-                arcpy.AddWarning(msg)
-                msg = prefix + str(datetime.datetime.now()) +"  "+ msg
-                print (msg)
-                arcpy.AddWarning(msg)
-                    
-                warning = arcpy.GetMessages(1)
-                error   = arcpy.GetMessages(2)
-                arcpy.AddWarning(warning)
-                arcpy.AddWarning(error)
-                    
-            if status == 3 :
-                prefix = '[!FINISH!]'
-                msg = prefix + str(datetime.datetime.now()) + " " + msg
-                print (msg)
-                arcpy.AddWarning(msg) 
-                
 
         def add_field(fc,field,Type = 'TEXT'):
 
@@ -160,6 +118,7 @@ class ButtonClass1(object):
             arcpy.SelectLayerByLocation_management (temp_lyr,"INTERSECT",AOI_Final,'0.1 meters')
             Delete_polygons                        (temp_lyr,del_layer)
             arcpy.Append_management                (AOI_Final,PARCEL_ALL_EDIT)
+            arcpy.Delete_management                (temp_lyr)
 
         Current = 'CURRENT'
         # Current     = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Tazar_For_run\EditTazar89690\EditTazar89690.mxd'
@@ -173,8 +132,10 @@ class ButtonClass1(object):
 
         AOI_Final       = gdb + '\\' + 'Parcel_all_edit'
 
-        Update_Large_Layers (AOI_Final,SDE_parcels)
-        print_arcpy_message('Bankal has Changes successfully')
+        Update_Large_Layers     (AOI_Final,SDE_parcels)
+        arcpy.RefreshActiveView ()
+        pythonaddins.MessageBox ("Bankal has Changes successfully", 'INFO', 0)
+
 
 
 
