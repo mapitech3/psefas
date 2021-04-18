@@ -270,7 +270,7 @@ def CreateWorkingGDB(gdb,Folder,copy,fc_name,CURRENT):
     if arcpy.Exists(ws):
                     arcpy.Delete_management(ws)
 
-    print 'Tazar_{}.gdb'.format(tazar_num)
+    print ('Tazar_{}.gdb'.format(tazar_num))
     arcpy.CreateFileGDB_management(Folder,'Tazar_{}.gdb'.format(tazar_num))
     
     return_list = []
@@ -776,7 +776,7 @@ def Layer_To_Edge_list(layer):
             min_l = min(min_list)
             new_list.append([df_edge[n][:-1],dict1[min_l][:-1],min_l])
         else:
-            print "part have no match type"
+            print ("part have no match type")
 
     return new_list
 

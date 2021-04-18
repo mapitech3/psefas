@@ -244,7 +244,7 @@ def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
         poly_vertices = [r for r in distance_vertices if r[0][5] == oid]
         for part in geometry:
             for pt in part:
-                if str(type(pt)) <> "<type 'NoneType'>":
+                if str(type(pt)) != "<type 'NoneType'>":
                     num_point = 0
                     #print str(pt.X) + "--" + str(pt.Y)
                     this_x = float("{0:.2f}".format(pt.X))
@@ -253,7 +253,7 @@ def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
                     if this_vertex:
                         if this_vertex[0][0][8] == None:
                             if this_vertex[0][0][7] < 0.5 and this_vertex[0][0][6] == 1:
-                                print "pseodo: delete vertex"
+                                print ("pseodo: delete vertex")
                             else:
                                 #print "pseodo, but important: keep the vertex"
                                 point = pt
@@ -272,7 +272,7 @@ def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
                         first_point = point
                     num_point = num_point + 1
         polygon = PtsToPolygon(pts)
-        if pts[0] <> pts[-1] and first_point:
+        if pts[0] != pts[-1] and first_point:
             #print "ooops.... - polygon not closed"
             pts.append(first_point)
         row.Shape       = polygon
@@ -287,7 +287,7 @@ def clean_pseudo(parcel_all, border,curves):
             pts_trio = []
             deleted = []
             for pt in part:
-                    if str(type(pt)) <> "<type 'NoneType'>":
+                    if str(type(pt)) != "<type 'NoneType'>":
                             pts_trio.append([pt.X, pt.Y])
                             if len(pts_trio) == 3:
                                 x = pts_trio[1][0]

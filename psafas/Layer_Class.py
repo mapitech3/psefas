@@ -7,7 +7,7 @@ try:
 except:
     pass
 
-import os,arcpy,json,datetime
+import os,arcpy,json
 import pandas as pd
 
 arcpy.env.overwriteOutput = True
@@ -85,7 +85,7 @@ def Feature_to_polygon(path,Out_put):
         for part in geom:
             num = 0
             for pt in part:
-                if str(type(pt)) <> "<type 'NoneType'>":
+                if str(type(pt)) != "<type 'NoneType'>":
                     polygon.append([pt.X,pt.Y])
                 else:
                     polygon.append(None)

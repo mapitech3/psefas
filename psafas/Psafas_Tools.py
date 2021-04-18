@@ -687,6 +687,7 @@ def Insert_to_table(bankal,tazar_copy,GDB):
     arcpy.MakeFeatureLayer_management      (bankal,'bankal_lyr')
     arcpy.SelectLayerByLocation_management ('bankal_lyr','INTERSECT',tazar_copy, '1 Meters')
 
+    add_field(tazar_copy,'PARCEL_FINAL','SHORT')
     None_me = [i for i in arcpy.SearchCursor(tazar_copy) if i.PARCEL_FINAL == None]
     if None_me:
         arcpy.CalculateField_management  (tazar_copy, 'PARCEL_FINAL', "int( ''.join ([i for i in !PARCELNAME! if i.isdigit()]))", "PYTHON" ) 

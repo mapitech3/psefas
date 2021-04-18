@@ -844,7 +844,7 @@ if select_all_cbx == 'true':
 
 
 
-lyr_dataSource = get_layer_by_fc_name('Parcel_all_edit')
+lyr_dataSource = get_layer_by_fc_name('PARCELS_inProc_edit')
 arcpy.AddMessage(lyr_dataSource)
 
 if lyr_dataSource:
