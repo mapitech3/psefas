@@ -1,4 +1,4 @@
-import os,uuid
+import os,uuid,re
 import arcpy
 
 def createFolder(dic):
@@ -63,9 +63,10 @@ def Get_Uni_Gush(path_bankal,parcel_tazar):
 
     return gush_to_add
 
-def mxd_pdf_making(mxd_path,gdb_path,tazar_num,gdb,out_put):
+def mxd_making(mxd_path,gdb_path,tazar_num,gdb,out_put):
 
     mxd = arcpy.mapping.MapDocument (mxd_path)
+
     mxd.findAndReplaceWorkspacePaths(gdb_path, gdb)
     df           = arcpy.mapping.ListDataFrames(mxd)[0]
     BORDER_Layer = arcpy.mapping.ListLayers(mxd, "", df)[-1]
@@ -74,13 +75,14 @@ def mxd_pdf_making(mxd_path,gdb_path,tazar_num,gdb,out_put):
     mxd.saveACopy   (out_put + "\\EditTazar"+tazar_num+".mxd")
     arcpy.AddMessage("Open MXD Copy")
     os.startfile    (out_put + "\\EditTazar"+tazar_num+".mxd")
+    arcpy.RefreshActiveView()
 
 # Input
 path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\PARCEL_ALL'
 path_line         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\Lines_InProcess_01'
 path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\Points_InProcess_01'
 
-# path_source_tazar = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data'
+# path_source_tazar = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data\\891'
 path_source_tazar         = arcpy.GetParameterAsText(0) # folder of tazars to make as AOI
 
 # Out_put
@@ -88,7 +90,7 @@ folder_out_put    = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_
 
 # Tamplate
 mxd_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar.mxd"
-gdb_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar880.gdb"
+gdb_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar880\CadasterEdit_Tazar.gdb"
 
 list_path_Num     = Get_Tazar_Path_Num(path_source_tazar)
 
@@ -111,7 +113,7 @@ for i in range(len(list_path_Num[0])):
 
     for j in [[path_line,line],[path_point,point]]:arcpy.Intersect_analysis ([j[0],parcel],j[1])
 
-    mxd_pdf_making (mxd_path_template,gdb_path_template,list_path_Num[1][i],tazar_gdb,tazar_folder)
+    mxd_making (mxd_path_template,gdb_path_template,list_path_Num[1][i],tazar_gdb,tazar_folder)
 
 
 
