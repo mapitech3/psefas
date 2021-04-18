@@ -65,15 +65,15 @@ def Get_Uni_Gush(path_bankal,parcel_tazar):
 
 def mxd_pdf_making(mxd_path,gdb_path,tazar_num,gdb,out_put):
 
-        mxd = arcpy.mapping.MapDocument (mxd_path)
-        mxd.findAndReplaceWorkspacePaths(gdb_path, gdb)
-        df           = arcpy.mapping.ListDataFrames(mxd)[0]
-        BORDER_Layer = arcpy.mapping.ListLayers(mxd, "", df)[-1]
-        df.extent    = BORDER_Layer.getExtent()
+    mxd = arcpy.mapping.MapDocument (mxd_path)
+    mxd.findAndReplaceWorkspacePaths(gdb_path, gdb)
+    df           = arcpy.mapping.ListDataFrames(mxd)[0]
+    BORDER_Layer = arcpy.mapping.ListLayers(mxd, "", df)[-1]
+    df.extent    = BORDER_Layer.getExtent()
 
-        mxd.saveACopy   (out_put + "\\EditTazar"+tazar_num+".mxd")
-        arcpy.AddMessage("Open MXD Copy")
-        os.startfile    (out_put + "\\Cheack_"+name+".mxd")
+    mxd.saveACopy   (out_put + "\\EditTazar"+tazar_num+".mxd")
+    arcpy.AddMessage("Open MXD Copy")
+    os.startfile    (out_put + "\\EditTazar"+tazar_num+".mxd")
 
 # Input
 path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\PARCEL_ALL'
@@ -82,11 +82,12 @@ path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_
 
 path_source_tazar = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data'
 
-mxd_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar.mxd"
-gdb_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar880.gdb"
-
 # Out_put
 folder_out_put    = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\temp'
+
+# Tamplate
+mxd_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar.mxd"
+gdb_path_template = r"C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\Tamplate\EditTazar880.gdb"
 
 list_path_Num     = Get_Tazar_Path_Num(path_source_tazar)
 
@@ -107,9 +108,9 @@ for i in range(len(list_path_Num[0])):
     arcpy.MakeFeatureLayer_management  (path_bankal, lyr_name,"\"GUSH_NUM\" in ({})".format(gush_to_add))
     arcpy.CopyFeatures_management      (lyr_name   , parcel)
 
-    for i in [[path_line,line],[path_point,point]]:arcpy.Intersect_analysis ([i[0],parcel],i[1])
+    for j in [[path_line,line],[path_point,point]]:arcpy.Intersect_analysis ([j[0],parcel],j[1])
 
-    mxd_pdf_making (mxd_path_template,gdb_path_template,list_path_Num[0][i],tazar_gdb,tazar_folder)
+    mxd_pdf_making (mxd_path_template,gdb_path_template,list_path_Num[1][i],tazar_gdb,tazar_folder)
 
 
 
