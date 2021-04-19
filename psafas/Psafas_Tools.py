@@ -476,9 +476,7 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
 
             pts.append(ring)
             polygon = PtsToPolygon1(pts)
-            
             row.Shape       = polygon
-            row.PARCEL_ID   > 0
             rows.updateRow(row)
 
     arcpy.Delete_management(gdb + "\\PARCEL_ALL_lyr_COPY_DEL")
