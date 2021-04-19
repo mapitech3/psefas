@@ -78,9 +78,9 @@ def mxd_making(mxd_path,gdb_path,tazar_num,gdb,out_put):
     arcpy.RefreshActiveView()
 
 # Input
-path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\PARCEL_ALL'
-path_line         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\Lines_InProcess_01'
-path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\Cadaster.gdb\Points_InProcess_01'
+path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_ALL'
+path_line         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_ARC'
+path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_NODE'
 
 # path_source_tazar = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data\\891'
 path_source_tazar         = arcpy.GetParameterAsText(0) # folder of tazars to make as AOI

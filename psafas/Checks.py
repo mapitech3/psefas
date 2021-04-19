@@ -755,7 +755,7 @@ def XML_to_Table(xml_string, gdb, df):
         #pythonaddins.MessageBox('לא נמצאו שגיאות','INFO',0)
         pythonaddins.MessageBox('No Errors Found','INFO',0)
     else:
-        fields = [field.tag.replace("{http://tempuri.org/}", "") for field in rows[0].getchildren() if field.tag.replace("{http://tempuri.org/}", "") <> "ErrInfo"]
+        fields = [field.tag.replace("{http://tempuri.org/}", "") for field in rows[0].getchildren() if field.tag.replace("{http://tempuri.org/}", "") != "ErrInfo"]
         err_infos = rows[0][-1].getchildren()
         for err_info in err_infos:
             fields.append(err_info.tag.replace("{http://tempuri.org/}", ""))
@@ -768,7 +768,7 @@ def XML_to_Table(xml_string, gdb, df):
             
         all_values = []
         for row in rows:
-            fields = [field.tag.replace("{http://tempuri.org/}", "") for field in row.getchildren() if field.tag.replace("{http://tempuri.org/}", "") <> "ErrInfo"]
+            fields = [field.tag.replace("{http://tempuri.org/}", "") for field in row.getchildren() if field.tag.replace("{http://tempuri.org/}", "") != "ErrInfo"]
             values = [field.text for field in row.getchildren() if '\n' not in field.text]
             err_infos = row[-1].getchildren()
             for err_info in err_infos:

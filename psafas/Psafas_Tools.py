@@ -217,7 +217,7 @@ def PrePare_Data(parcel_bankal,parcels_copy,points_copy,Point_bankal,GDB,name_ba
     # Cut Points From Bankal
     Layer_Management(Point_bankal).Select_By_Location("INTERSECT",tazar_border,"10 Meters",Point_bankal_Cut)
 
-    Move_Vertices_By_Name                      (parcel_Bankal_cut,Point_bankal_Cut,name_bankal,points_copy,name_tazar) # לשים לב לשדות שמות הנקודות
+    # Move_Vertices_By_Name                      (parcel_Bankal_cut,Point_bankal_Cut,name_bankal,points_copy,name_tazar) # לשים לב לשדות שמות הנקודות
 
     Delete_polygons         (parcel_Bankal_cut,parcels_copy,AOI)
     arcpy.Append_management (parcels_copy,AOI,'NO_TEST')
@@ -432,8 +432,9 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
     rows = arcpy.UpdateCursor(PARCEL_ALL_lyr)
     for row in rows:
             geometry = row.Shape
-            oid = row.OBJECTID
-            pts = []
+            oid  = row.OBJECTID
+            pts  = []
+            ring = []
             poly_vertices = [r for r in distance_vertices if r[0][5] == oid]
             for part in geometry:
                     for pt in part:
@@ -450,24 +451,32 @@ def clean_slivers_by_vertex(PARCEL_ALL,SLIVERS_CLEAN,border,Dis_search,PARCEL_AL
                                                     else:
                                                             #print "pseodo, but important: keep the vertex"
                                                             point = pt
-                                                            pts.append(point)
+                                                            ring.append([point.X,point.Y])
                                             # tazar point in buffer
                                             else:
                                                     # check minimum distance
                                                     the_minimum_vertex = [v for v in this_vertex if v[1] == min([i[1] for i in this_vertex])]
                                                     point = arcpy.Point(the_minimum_vertex[0][0][9], the_minimum_vertex[0][0][10])
-                                                    pts.append(point)
+                                                    ring.append([point.X,point.Y])
                                     # point not on sliver: keep the vertex
                                     else:
                                             point = pt
-                                            pts.append(point)
+                                            ring.append([point.X,point.Y])
                                     if num_point == 0:
                                             first_point = point
                                     num_point = num_point + 1
-            polygon = PtsToPolygon(pts)
-            if pts[0] != pts[-1] and first_point:
-                    #print "ooops.... - polygon not closed"
-                    pts.append(first_point)
+                            else:
+                                ring.append([first_point.X, first_point.Y])
+                                ring.append(None)
+                                num_point = 0
+
+            # if pts[0] != pts[-1] and first_point:
+            #         #print "ooops.... - polygon not closed"
+            #         pts.append(first_point)
+
+            pts.append(ring)
+            polygon = PtsToPolygon1(pts)
+            
             row.Shape       = polygon
             row.PARCEL_ID   > 0
             rows.updateRow(row)

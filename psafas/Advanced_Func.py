@@ -5,7 +5,7 @@
 
 import os
 import arcpy
-import pandas
+import re
 import sqlite3
 import math
 
@@ -198,7 +198,8 @@ def fix_holes_Overlaps_By_Length(path,tazar,path2):
             print("no holes found".format(str(number_of_slivers)))
 
 
-def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
+
+def Snap_border_pnts(border,parcel_all,Dis_search):
 
 
     print_arcpy_message('START Func: Snap border pnts',1)
@@ -241,10 +242,14 @@ def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
         geometry = row.Shape
         oid = row.OBJECTID
         pts = []
+        ring = []
         poly_vertices = [r for r in distance_vertices if r[0][5] == oid]
         for part in geometry:
+            counter = 0
             for pt in part:
                 if str(type(pt)) != "<type 'NoneType'>":
+                    if counter == 0:
+                        first_pt = pt
                     num_point = 0
                     #print str(pt.X) + "--" + str(pt.Y)
                     this_x = float("{0:.2f}".format(pt.X))
@@ -257,25 +262,37 @@ def Snap_border_pnts(ws,border,parcel_all,Dis_search = 1):
                             else:
                                 #print "pseodo, but important: keep the vertex"
                                 point = pt
-                                pts.append(point)
+                                #pts.append(point)
+                                ring.append([pt.X, pt.Y])
                         # tazar point in buffer
                         else:
                             # check minimum distance
                             the_minimum_vertex = [v for v in this_vertex if v[1] == min([i[1] for i in this_vertex])]
                             point = arcpy.Point(the_minimum_vertex[0][0][9], the_minimum_vertex[0][0][10])
-                            pts.append(point)
+                            #pts.append(point)
+                            ring.append([the_minimum_vertex[0][0][9], the_minimum_vertex[0][0][10]])
                     # point not on sliver: keep the vertex
                     else:
                         point = pt
-                        pts.append(point)
+                        #pts.append(point)
+                        ring.append([pt.X, pt.Y])
                     if num_point == 0:
                         first_point = point
                     num_point = num_point + 1
-        polygon = PtsToPolygon(pts)
-        if pts[0] != pts[-1] and first_point:
+                    counter = counter + 1
+                else:
+                    ring.append([first_pt.X, first_pt.Y])
+                    ring.append(None)
+                    counter = 0
+            
+        #if pts[0] != pts[-1] and first_point:
             #print "ooops.... - polygon not closed"
-            pts.append(first_point)
-        row.Shape       = polygon
+            #pts.append(first_point)
+                    
+        pts.append(ring)  
+
+        polygon    = PtsToPolygon1(pts)
+        row.Shape  = polygon
         rows.updateRow(row)
 
 
@@ -341,6 +358,12 @@ def clean_pseudo(parcel_all, border,curves):
     deleted_vertexs = before_vertxs - after_vertxs
     print_arcpy_message('Total Vertexs Deleted: {}'.format(deleted_vertexs))
 
+def Ignore_error(text):
+    try:
+        text = str(text)
+        return True
+    except:
+        return False
 
 
 def Move_Vertices_By_Name(polygon,points,field_name_points,points_to_move,field_name_to_move = 'POINT_NAME',Dis_limit_to_move = 10):
@@ -364,8 +387,17 @@ def Move_Vertices_By_Name(polygon,points,field_name_points,points_to_move,field_
 
     arcpy.Select_analysis(polygon,Save_Source)
 
-    data_points = {str(round(n.X,2))    +'-' + str(round(n.Y,2)):str(i.getValue(field_name_points)) for i in arcpy.SearchCursor(points) for n in i.shape if i.getValue(field_name_points) != None and i.getValue(field_name_points) != ''}
-    move_points = {str(i.getValue(field_name_to_move)):[n.X,n.Y] for i in arcpy.SearchCursor(points_to_move) for n in i.shape if i.getValue(field_name_to_move) != None and i.getValue(field_name_to_move) != ''}
+    # try:
+    data_points = {str(round(n.X,2)) +'-' + str(round(n.Y,2)):str(i.getValue(field_name_points)) \
+                  for i in arcpy.SearchCursor(points) for n in i.shape if not i.getValue(field_name_points).isspace()\
+                  if Ignore_error(i.getValue(field_name_points.encode('UTF-8')))\
+                  if i.getValue(field_name_points) != None and i.getValue(field_name_points) != ''}
+
+    move_points = {str(i.getValue(field_name_to_move)):[n.X,n.Y] for i in arcpy.SearchCursor(points_to_move)\
+                  for n in i.shape  if not i.getValue(field_name_points).isspace() \
+                  if Ignore_error(i.getValue(field_name_points.encode('UTF-8')))\
+                  if i.getValue(field_name_to_move) != None and i.getValue(field_name_to_move) != ''}
+
 
     if (bool(data_points) == True) and (bool(move_points)==True):
         data_polygons = [[str(round(pts.X,2)) +'-' + str(round(pts.Y,2)),round(pts.X,2),round(pts.Y,2),'',0,0] for i in arcpy.SearchCursor(polygon) for n in i.shape for part in i.shape for pts in part if pts]

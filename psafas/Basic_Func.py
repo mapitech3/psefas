@@ -332,6 +332,31 @@ def dis(x1,x2,y1,y2):
     dist = math.sqrt(((x1-x2)**2) + ((y1-y2)**2))
     return dist
 
+def PtsToPolygon1(coord_list):
+    parts = arcpy.Array()
+    rings = arcpy.Array()
+    ring = arcpy.Array()
+    for part in coord_list:
+        for pnt in part:
+            if pnt:
+                ring.add(arcpy.Point(pnt[0], pnt[1]))
+            else:
+                # null point - we are at the start of a new ring
+                rings.add(ring)
+                ring.removeAll()
+        # we have our last ring, add it
+        rings.add(ring)
+        ring.removeAll()
+        # if we only have one ring: remove nesting
+        if len(rings) == 1:
+            rings = rings.getObject(0)
+        parts.add(rings)
+        rings.removeAll()
+    # if single-part (only one part) remove nesting
+    if len(parts) == 1:
+        parts = parts.getObject(0)
+    return arcpy.Polygon(parts)
+
 def PtsToPolygon(pts):
     point = arcpy.Point()
     array = arcpy.Array()

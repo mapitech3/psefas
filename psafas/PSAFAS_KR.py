@@ -43,7 +43,7 @@ def Get_layer_gdb_Copy(gdb):
 scriptPath = os.path.abspath(__file__)
 Scripts    = os.path.dirname(scriptPath)
 ToolShare  = os.path.dirname(Scripts)
-Scratch    = ToolShare + "\\Scratch"
+Scratch    = ToolShare + "\\Scratch2"
 ToolData   = ToolShare + "\\ToolData"
 
 parcels_bankal         = arcpy.GetParameterAsText(0)
@@ -59,7 +59,7 @@ print_arcpy_message     ("# # # # # # # S T A R T # # # # # #",status = 1)
 layers_to_Copy  = ['PARCEL_ALL_EDIT','PARCEL_ARC_EDIT','PARCEL_NODE_EDIT','PARCELS_inProc_edit','LINES_inProc_edit','POINTS_inProc_edit']
 
 GDB_Source      = getLayerPath     (parcels_bankal,CURRENT)
-GDB             = CreateWorkingGDB (GDB_Source,Folder,layers_to_Copy,'Parcels_inProc_edit',CURRENT)
+GDB             = CreateWorkingGDB (GDB_Source,Folder,layers_to_Copy,'PARCELS_inProc_edit',CURRENT)
 
 # קריאה של שכבות העבודה מבסיס הנתונים המקורי והחדש
 parcel_bankal    ,arc_bankal    ,point_bankal    ,parcel_modad     , arc_modad    ,  point_modad    = Get_layer_gdb       (GDB_Source)
@@ -103,7 +103,7 @@ Sub_Processing(parcel_bankal,parcel_modad_c,point_bankal,point_modad,arc_bankal,
 
 if Continue:
     Dis_border_pnts = get_default_Snap_border (Point_bankal_Cut,parcel_modad_c,Dis_limit_border_pnts) 
-    Snap_border_pnts        (GDB , tazar_border ,AOI,Dis_border_pnts) # סתימת חורים ע"י הזזת נקודות גבול
+    Snap_border_pnts        (tazar_border ,AOI,Dis_border_pnts) # סתימת חורים ע"י הזזת נקודות גבול
     Update_Polygons         (AOI , parcel_modad_c)
     Fix_curves              (AOI,tazar_border,Curves)
     AOI_best  = AOI
