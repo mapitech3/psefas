@@ -594,7 +594,7 @@ def add_err_pts_to_mxd(our_gdb, folder, data_source,CURRENT):
     for err_fc_name in err_fc_names:
         arcpy.DeleteRows_management(data_source + "\\" + err_fc_name)
         arcpy.Copy_management(data_source + "\\" + err_fc_name, our_gdb + "\\" + err_fc_name)
-    
+
     mxd = arcpy.mapping.MapDocument(CURRENT)
     df = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]
     for root, dir, files in os.walk(folder):
@@ -603,11 +603,9 @@ def add_err_pts_to_mxd(our_gdb, folder, data_source,CURRENT):
             if file == "Errors_Line.lyr" or file == "Errors_Point.lyr" or file == "Errors_Polygon.lyr" or file == "Possible_Error_points.lyr" or file == "PARCEL_ALL_EDIT_copy.lyr" or file == "PARCEL_NODE_EDIT_copy.lyr" or file == "PARCEL_ARC_EDIT_copy.lyr":
                 addLayer        = arcpy.mapping.Layer(file_full_path)
                 arcpy.mapping.AddLayer(df, addLayer, "TOP")
-                layer = arcpy.mapping.ListLayers(mxd, "", df)[0]
-                try:
-                    mxd.findAndReplaceWorkspacePaths(data_source, our_gdb)
-                except:
-                    print ("Coudnt replace Data Source")
+                # layer = arcpy.mapping.ListLayers(mxd, "", df)[0]
+                mxd.findAndReplaceWorkspacePaths(data_source, our_gdb)
+
         arcpy.RefreshActiveView()
 
 

@@ -236,7 +236,7 @@ def deleteErrorCode(layer, list_code):
     exe = [cursor.deleteRow() for row in cursor if row[0]if str(row[0]) in list_code]
                     
 
-def topology_basic(final,ws):
+def topology_basic(final,gdb):
 
     memory        = r'in_memory'
     random_name   = str(uuid.uuid4())[::5]
@@ -244,7 +244,7 @@ def topology_basic(final,ws):
     feat_to_poly  = memory + '\\' + 'Feature_to_poly'         + random_name
     topo_holes    = memory + '\\' + 'Topolgy_Check_holes'     + random_name
     topo_inter    = memory + '\\' + 'Topolgy_Check_intersect' + random_name
-    error_polygon = ws     + '\\' + 'Errors_polygon'          
+    error_polygon = gdb     + '\\' + 'Errors_polygon'          
 
     deleteErrorCode (error_polygon, ["3"])
     deleteErrorCode (error_polygon, ["4"])
@@ -275,7 +275,7 @@ def del_geom(path):
                     cursor.deleteRow()
             to_delete.add(key)
 
-def line_Not_on_parcels(ARC_bankal,Parcel_makor, ws):
+def line_Not_on_parcels(ARC_bankal,Parcel_makor, gdb):
 
     #  # cuting layer , to work on less data # #
 
@@ -283,7 +283,7 @@ def line_Not_on_parcels(ARC_bankal,Parcel_makor, ws):
 
     random_name    = str(uuid.uuid4())[::5]
     Boundery_touch = 'in_memory\\Boundery_touch' + random_name
-    error_line     = ws + "\\Errors_Line"
+    error_line     = gdb + "\\Errors_Line"
     feat_lyr       = 'ARC_bankal_lyr' + random_name
 
     deleteErrorCode                        (error_line, ["5"])
@@ -390,12 +390,12 @@ def generateCurves(fc):
 
 
 
-def Insert_needed_arc(parcel_bankal,arc_bankal,Keshet,ws):
+def Insert_needed_arc(parcel_bankal,arc_bankal,Keshet,gdb):
 
     random_name       = str(uuid.uuid4())[::5]
     arc_diss          = r'in_memory'  + '\\' + 'arc__Diss'      + random_name
     parce_to_line     = r'in_memory'  + '\\' + 'parcel_to_line' + random_name
-    error_line        = ws  + '\\' + 'Errors_Line'
+    error_line        = gdb  + '\\' + 'Errors_Line'
 
     deleteErrorCode                        (error_line, ["7"])
 
@@ -429,9 +429,9 @@ def Del_Layer_on_ref(layer,curve,invert = ''):
     arcpy.SelectLayerByLocation_management (name,"INTERSECT",curve,'0.1 Meters','',invert)
     arcpy.DeleteFeatures_management        (name)
 
-def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,ws):
+def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,gdb):
 
-    node_error = ws + '\\' + 'Errors_Point'
+    node_error = gdb + '\\' + 'Errors_Point'
     Error_temp = r'in_memory' + '\\' + 'Error_temp'
 
     deleteErrorCode (node_error, ["12"])
@@ -443,9 +443,9 @@ def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,ws):
 
     Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionary["12"])
 
-def vertex_without_modad_point(layer_parcel,node_modad,ws):
+def vertex_without_modad_point(layer_parcel,node_modad,gdb):
 
-    node_error = ws + '\\' + 'Errors_Point'
+    node_error = gdb + '\\' + 'Errors_Point'
 
     pts =  layer_parcel.set_ - node_modad.set_
 
@@ -459,9 +459,9 @@ def vertex_without_modad_point(layer_parcel,node_modad,ws):
 
 
 
-def missing_modad_point(layer_node,parcel_modad,node_modad,ws):
+def missing_modad_point(layer_node,parcel_modad,node_modad,gdb):
 
-    node_error = ws + '\\' + 'Errors_Point'
+    node_error = gdb + '\\' + 'Errors_Point'
 
     deleteErrorCode (node_error, ["2"])
 
@@ -475,9 +475,9 @@ def missing_modad_point(layer_node,parcel_modad,node_modad,ws):
     Calc_field_value_error (Error_temp,node_error,"2",ErrorDictionary["2"])
 
 
-def double_arc(ws,arc):
+def double_arc(gdb,arc):
 
-    Error_line = ws            + '\\' + 'Errors_Line'
+    Error_line = gdb            + '\\' + 'Errors_Line'
     arc_inter  = r'in_memory'  + '\\' + 'arc_intersect' + str(uuid.uuid4())[::5]
 
     deleteErrorCode                   (Error_line, ["8"])
@@ -487,9 +487,9 @@ def double_arc(ws,arc):
     Calc_field_value_error (arc_inter,Error_line,"8",ErrorDictionary["8"])
 
 
-def double_node(ws,node):
+def double_node(gdb,node):
 
-    Errors_Point = ws            + '\\' + 'Errors_Point'
+    Errors_Point = gdb           + '\\' + 'Errors_Point'
     node_inter   = r'in_memory'  + '\\' + 'node_inter' + str(uuid.uuid4())[::5]
 
     deleteErrorCode          (Errors_Point, ["9"])
@@ -553,7 +553,7 @@ def Parcel_data(path_after,ws):
     print_arcpy_message("added parcels:   {}  ".format(add_parcels),1)
     print_arcpy_message("Deleted parcels: {}  ".format(del_parcels),1)
 
-def Calc_Area(lyr,ws):
+def Calc_Area(lyr,ws,gdb):
     def math_delta_rashum(area_rashum):
         area_rashum = float(area_rashum)
         delta1 = (0.3 * (math.sqrt(area_rashum)) + (0.005 * area_rashum))
@@ -571,9 +571,9 @@ def Calc_Area(lyr,ws):
         else:
             return 'Ok'
         
-    cut_bankal    = ws + '\\' + 'cut_bankal'
-    tazar_copy    = ws + '\\' + 'PARCELS_inProc_edit_copy'
-    error_polygon = ws + '\\' + 'Errors_Polygon'
+    cut_bankal    = ws  + '\\' + 'cut_bankal'
+    tazar_copy    = ws  + '\\' + 'PARCELS_inProc_edit_copy'
+    error_polygon = gdb + '\\' + 'Errors_Polygon'
 
     deleteErrorCode (error_polygon, ["10"])
 
@@ -608,9 +608,9 @@ def Calc_Area(lyr,ws):
 
     Calc_field_value_error (cut_bankal,error_polygon,"10",ErrorDictionary["10"])
 
-def Check_accurancy_pracel(fc,ws):
+def Check_accurancy_pracel(fc,gdb):
 
-    Error_Polygon = ws + '\\' + 'Errors_Polygon'
+    Error_Polygon = gdb + '\\' + 'Errors_Polygon'
 
     deleteErrorCode (Error_Polygon, ["11"])
 
@@ -637,9 +637,9 @@ def Check_accurancy_pracel(fc,ws):
                         in_rows.insertRow(in_row)
     del in_rows
 
-def missing_Values_in_parcel(Parcel_makor,ws):
+def missing_Values_in_parcel(Parcel_makor,ws,gdb):
 
-    error_polygon = ws + '\\' + 'Errors_Polygon'
+    error_polygon = gdb + '\\' + 'Errors_Polygon'
 
     deleteErrorCode (error_polygon, ["1"])
     field_mising = ws + '\\' +'Field_missing'
@@ -655,11 +655,11 @@ def missing_Values_in_parcel(Parcel_makor,ws):
     Calc_field_value_error  (field_mising,error_polygon,"1",ErrorDictionary["1"])
 
 
-def Find_not_exists_parcel_in_Gush(parcel_all_final,ws):
+def Find_not_exists_parcel_in_Gush(parcel_all_final,ws,gdb):
 
     Tazar         = ws + '\\' + 'PARCELS_inProc_edit_copy'
     parcel_before = ws + '\\' + 'PARCEL_ALL_EDIT_copy'
-    parcel_Error  = ws + '\\' + 'Errors_Polygon'
+    parcel_Error  = gdb + '\\' + 'Errors_Polygon'
 
     deleteErrorCode (parcel_Error, ["13"])
 
@@ -706,8 +706,8 @@ def get_envelop_area(path,num):
 
     return data
 
-def Found_bad_parcel_around_AOI(path_new,ws):
-    Errors_Polygon  = ws + '\\' + 'Errors_Polygon'
+def Found_bad_parcel_around_AOI(path_new,ws,gdb):
+    Errors_Polygon  = gdb + '\\' + 'Errors_Polygon'
 
     deleteErrorCode (Errors_Polygon, ["14"])
 
@@ -895,35 +895,35 @@ Keshet = generateCurves(layer_parcel.layer)
 if topology_basic_cbx == 'true':
     print_arcpy_message  (ErrorDictionary["3"],1)
     print_arcpy_message  (ErrorDictionary["4"],1)
-    topology_basic       (layer_parcel,ws)
+    topology_basic       (layer_parcel,gdb)
 
 if line_Not_on_parcels_cbx == 'true':
     print_arcpy_message  (ErrorDictionary["5"],1)
-    line_Not_on_parcels  (layer_arc,layer_parcel, ws)
+    line_Not_on_parcels  (layer_arc,layer_parcel, gdb)
 
 if Missing_arc_cbx == 'true':
     print_arcpy_message (ErrorDictionary["7"],1)
-    Insert_needed_arc   (layer_parcel,layer_arc,Keshet,ws)
+    Insert_needed_arc   (layer_parcel,layer_arc,Keshet,gdb)
 
 if Node_not_on_parcel_cbx == 'true':
     print_arcpy_message (ErrorDictionary["12"],1)
-    Node_not_on_parcel  (layer_parcel,layer_node.layer,ws)
+    Node_not_on_parcel  (layer_parcel,layer_node.layer,gdb)
 
 if vertex_without_modad_point_cbx == 'true':
     print_arcpy_message (ErrorDictionary["6"],1)
-    vertex_without_modad_point  (layer_parcel,lyr_node_modad,ws)
+    vertex_without_modad_point  (layer_parcel,lyr_node_modad,gdb)
 
 if missing_modad_point_cbx == 'true':
     print_arcpy_message (ErrorDictionary["2"],1)
-    missing_modad_point (layer_node,parcel_modad,lyr_node_modad,ws)
+    missing_modad_point (layer_node,parcel_modad,lyr_node_modad,gdb)
 
 if double_arc_cbx == 'true':
     print_arcpy_message (ErrorDictionary["8"],1)
-    double_arc          (ws,arc_all)
+    double_arc          (gdb,arc_all)
 
 if double_node_cbx == 'true':
     print_arcpy_message (ErrorDictionary["9"],1)
-    double_node         (ws,node_all)
+    double_node         (gdb,node_all)
 
 if Parcel_data_cbx == 'true':
     print_arcpy_message ('חלקות יוצאות ונכנסות',1)
@@ -931,23 +931,23 @@ if Parcel_data_cbx == 'true':
 
 if Check_area_in_tazar_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["10"],1)     
-    Calc_Area                       (layer_parcel.layer,ws)
+    Calc_Area                       (layer_parcel.layer,ws,gdb)
 
 if Gush_parcel_doubled_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["11"],1)
-    Check_accurancy_pracel          (layer_parcel.layer,ws)
+    Check_accurancy_pracel          (layer_parcel.layer,gdb)
 
 if missing_Values_in_parcel_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["1"],1)
-    missing_Values_in_parcel        (layer_parcel.layer,ws)
+    missing_Values_in_parcel        (layer_parcel.layer,ws,gdb)
 
 if Parcel_gush_number_not_vaild_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["13"],1)
-    Find_not_exists_parcel_in_Gush  (layer_parcel.layer,ws)
+    Find_not_exists_parcel_in_Gush  (layer_parcel.layer,ws,gdb)
 
 if Found_bad_parcel_around_AOI_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["14"],1)
-    Found_bad_parcel_around_AOI     (layer_parcel.layer,ws)
+    Found_bad_parcel_around_AOI     (layer_parcel.layer,ws,gdb)
 
 # service_code_sum = 0
 # #cbx17
