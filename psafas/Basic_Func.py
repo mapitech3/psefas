@@ -864,3 +864,4 @@ def del_Non_Boundery_Line(line_layer,aoi_Final,tazar_border):
 
     arcpy.Delete_management(Line_cut)
     arcpy.Delete_management(label_point)
+

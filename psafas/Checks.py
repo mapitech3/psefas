@@ -326,23 +326,14 @@ class Layer_Engine():
     def Extract_shape(self):
         
         if self.shapetype != 'POINT':
-            self.data_shape          = [str(round(j.X,3)) + '-' + str(round(j.Y,3))  for i in arcpy.da.SearchCursor (self.layer,['SHAPE@']) if i[0] for n in i[0] for j in n if j]
+            self.data_shape          = [str(round(j.X,2)) + '-' + str(round(j.Y,2))  for i in arcpy.da.SearchCursor (self.layer,['SHAPE@']) if i[0] for n in i[0] for j in n if j]
             self.set_                = set(self.data_shape)
             self.df_shape            = pd.DataFrame(data = self.data_shape , columns = ['SHAPE'])
         else:
-            self.data_shape          = [str(round(i[-1].centroid.X,3)) + '-' + str(round(i[-1].centroid.Y,3)) for i in self.data if i[-1]]
+            self.data_shape          = [str(round(i[-1].centroid.X,2)) + '-' + str(round(i[-1].centroid.Y,2)) for i in self.data if i[-1]]
             self.set_                = set(self.data_shape)
             self.df_shape            = pd.DataFrame(data = self.data_shape , columns = ['SHAPE'])
 
-
-def Convert_list_to_point(list_):
-
-    if list_:
-        layer = r'in_memory\\a' + str(random.randrange(0, 1000, 1))
-        arcpy.CopyFeatures_management    ([arcpy.PointGeometry(arcpy.Point(i[0],i[1])) for i in list_],layer)
-        return layer
-    else:
-        return []
 
 def polygon_to_line(fc,layer_new):
     ws, fc_name = os.path.split (layer_new)
@@ -443,33 +434,36 @@ def Node_not_on_parcel(parcel_all,PARCEL_NODE_EDIT,gdb):
 
     Calc_field_value_error (Error_temp,node_error,"12",ErrorDictionary["12"])
 
-def vertex_without_modad_point(layer_parcel,node_modad,gdb):
+def vertex_without_modad_point(layer_parcel,parcel_modad,node_modad,gdb):
 
-    node_error = gdb + '\\' + 'Errors_Point'
+    node_error    = gdb + '\\' + 'Errors_Point'
+    Error_t    = 'parcel_vertex_lyr'
+    layer         = gdb + '\\' + 'parcel_vertexs'
+    Error_temp    = gdb + '\\' + 'Error_temp'
 
-    pts =  layer_parcel.set_ - node_modad.set_
+    arcpy.CopyFeatures_management([arcpy.PointGeometry(arcpy.Point(j.X,j.Y)) for i in arcpy.SearchCursor (layer_parcel.layer) for n in i.shape for j in n if j],layer)
+
+    arcpy.MakeFeatureLayer_management      (layer,Error_t)
+    arcpy.SelectLayerByLocation_management (Error_t,"INTERSECT",node_modad.layer,'0.01 meters',"NEW_SELECTION","INVERT")
 
     deleteErrorCode (node_error, ["6"])
 
-    pts_list = [[i.split('-')[0],i.split('-')[1]] for i in list(pts)]
-    Error_temp = Convert_list_to_point(pts_list)
+    Del_Layer_on_ref       (Error_t,parcel_modad,'INVERT')
 
-    Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
-    Calc_field_value_error (Error_temp,node_error,"6",ErrorDictionary["6"])
-
+    arcpy.Dissolve_management (Error_t,Error_temp,'','',False)
+    Calc_field_value_error    (Error_temp,node_error,"6",ErrorDictionary["6"])
 
 
 def missing_modad_point(layer_node,parcel_modad,node_modad,gdb):
 
     node_error = gdb + '\\' + 'Errors_Point'
+    Error_temp = 'layer_node_lyr'
 
     deleteErrorCode (node_error, ["2"])
 
-    check = layer_node.set_ - node_modad.set_
-
-    pts_list = [[i.split('-')[0],i.split('-')[1]] for i in list(check)]
-
-    Error_temp = Convert_list_to_point(pts_list)
+    # check = layer_node.layer - node_modad.layer
+    arcpy.MakeFeatureLayer_management     (layer_node.layer,'layer_node_lyr')
+    arcpy.SelectLayerByLocation_management('layer_node_lyr',"INTERSECT",node_modad.layer,'0.01 meters',"NEW_SELECTION","INVERT")
 
     Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
     Calc_field_value_error (Error_temp,node_error,"2",ErrorDictionary["2"])
@@ -886,9 +880,6 @@ layer_node       = Layer_Engine(node_all)
 lyr_node_modad   = Layer_Engine(node_modad)
 
 layer_parcel.Extract_shape  ()
-layer_node.Extract_shape    ()
-lyr_node_modad.Extract_shape()
-
 
 Keshet = generateCurves(layer_parcel.layer)
 
@@ -911,7 +902,7 @@ if Node_not_on_parcel_cbx == 'true':
 
 if vertex_without_modad_point_cbx == 'true':
     print_arcpy_message (ErrorDictionary["6"],1)
-    vertex_without_modad_point  (layer_parcel,lyr_node_modad,gdb)
+    vertex_without_modad_point  (layer_parcel,parcel_modad,lyr_node_modad,gdb)
 
 if missing_modad_point_cbx == 'true':
     print_arcpy_message (ErrorDictionary["2"],1)
@@ -948,6 +939,9 @@ if Parcel_gush_number_not_vaild_cbx == 'true':
 if Found_bad_parcel_around_AOI_cbx == 'true':
     print_arcpy_message             (ErrorDictionary["14"],1)
     Found_bad_parcel_around_AOI     (layer_parcel.layer,ws,gdb)
+
+
+
 
 # service_code_sum = 0
 # #cbx17

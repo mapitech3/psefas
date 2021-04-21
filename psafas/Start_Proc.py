@@ -82,7 +82,6 @@ path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_
 path_line         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_ARC'
 path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_NODE'
 
-# path_source_tazar = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data\\891'
 path_source_tazar         = arcpy.GetParameterAsText(0) # folder of tazars to make as AOI
 
 # Out_put
@@ -111,8 +110,23 @@ for i in range(len(list_path_Num[0])):
     arcpy.MakeFeatureLayer_management  (path_bankal, lyr_name,"\"GUSH_NUM\" in ({})".format(gush_to_add))
     arcpy.CopyFeatures_management      (lyr_name   , parcel)
 
-    for j in [[path_line,line],[path_point,point]]:arcpy.Intersect_analysis ([j[0],parcel],j[1])
+    # Creating New Line
+    arcpy.Dissolve_management (parcel,'in_memory\\Diss')
+    for j in [[path_line,line]]:arcpy.Intersect_analysis ([j[0],'in_memory\\Diss'],j[1])
+    arcpy.DeleteField_management (line,'FID_Diss')
 
+    # Creating New Point
+    arcpy.MakeFeatureLayer_management      (path_point      ,'path_point_lyr')
+    arcpy.SelectLayerByLocation_management ('path_point_lyr',"INTERSECT",'in_memory\\Diss')
+    arcpy.CopyFeatures_management          ('path_point_lyr', point)
+
+    # Creating Errors Polygon, Line, Points
+    for err_fc_name in ["Errors_Line", "Errors_Point", "Errors_Polygon"]: arcpy.Copy_management(gdb_path_template + "\\" + err_fc_name, tazar_gdb + "\\" + err_fc_name)
+
+    # creating copy for source parcels lines and points
+    for layer in [parcel,line,point]: arcpy.CopyFeatures_management(layer,layer + '_copy')
+
+    # create and opening mxd
     mxd_making (mxd_path_template,gdb_path_template,list_path_Num[1][i],tazar_gdb,tazar_folder)
 
 

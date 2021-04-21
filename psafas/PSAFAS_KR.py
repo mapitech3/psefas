@@ -26,7 +26,7 @@ def Get_layer_gdb(gdb):
 
     return parcel_bankal,arc_bankal,point_bankal,parcel_modad,arc_modad,point_modad
 
-def Get_layer_gdb_Copy(gdb):
+def Get_layer_gdb_Copy(GDB):
 
     parcel_bankal_c = GDB + '\\' + 'PARCEL_ALL_EDIT_copy'
     arc_bankal_c    = GDB + '\\' + 'PARCEL_ARC_EDIT_copy'
@@ -91,7 +91,6 @@ AOI,tazar_border,Curves,parcel_Bankal_cut,Point_bankal_Cut = PrePare_Data    (pa
 
 Get_Attr_From_parcel               (AOI,parcel_modad_c)                        #במידה והכלי מאתר שכל הישובים מסביב אותו דבר connect_parcel_to_sett גורס את הפעולה של
 Fix_curves                         (AOI,tazar_border,Curves)
-add_err_pts_to_mxd                 (GDB_Source, ToolData + "\\lyr_files", ToolData + "\\demo.gdb",CURRENT) # parcels_bankal[1] = Current
 
 
 if CheckResultsIsOK(AOI,tazar_border,1):
@@ -196,6 +195,5 @@ arcpy.Append_management        (AOI_Point,point_bankal)
 print_arcpy_message ("  #   #   #    #  Last Checks  #   #   #   #  ")
 
 Parcel_data         (parcel_bankal,parcel_bankal_c,parcel_modad_c)
-
 
 print_arcpy_message     ("# # # # # # # #     F I N I S H     # # # # # # # # #",1)

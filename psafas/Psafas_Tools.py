@@ -22,7 +22,6 @@ connect_parcel_to_sett
 get_default_Snap_border
 get_no_node_vertex
 clean_slivers_by_vertex
-add_err_pts_to_mxd
 ChangeFieldNames
 Parcel_data
 Insert_to_table
@@ -585,29 +584,6 @@ def ChangeFieldNames(parcel,line,point):
         arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in str(!PARCEL_FINAL!) if i.isdigit()]))", "PYTHON" ) 
     except:
         arcpy.CalculateField_management  (parcel, 'PARCEL', "int( ''.join ([i for i in !ParcelName! if i.isdigit()]))", "PYTHON" ) 
-
-
-def add_err_pts_to_mxd(our_gdb, folder, data_source,CURRENT):
-
-    # copy 3 error fcs from data_source (demo.gdb) to our_gdb
-    err_fc_names = ["Errors_Line", "Errors_Point", "Errors_Polygon"]
-    for err_fc_name in err_fc_names:
-        arcpy.DeleteRows_management(data_source + "\\" + err_fc_name)
-        arcpy.Copy_management(data_source + "\\" + err_fc_name, our_gdb + "\\" + err_fc_name)
-
-    mxd = arcpy.mapping.MapDocument(CURRENT)
-    df = arcpy.mapping.ListDataFrames(mxd, "Layers")[0]
-    for root, dir, files in os.walk(folder):
-        for file in files:
-            file_full_path  = root + "\\" + file
-            if file == "Errors_Line.lyr" or file == "Errors_Point.lyr" or file == "Errors_Polygon.lyr" or file == "Possible_Error_points.lyr" or file == "PARCEL_ALL_EDIT_copy.lyr" or file == "PARCEL_NODE_EDIT_copy.lyr" or file == "PARCEL_ARC_EDIT_copy.lyr":
-                addLayer        = arcpy.mapping.Layer(file_full_path)
-                arcpy.mapping.AddLayer(df, addLayer, "TOP")
-                # layer = arcpy.mapping.ListLayers(mxd, "", df)[0]
-                mxd.findAndReplaceWorkspacePaths(data_source, our_gdb)
-
-        arcpy.RefreshActiveView()
-
 
 
 def Parcel_data(path_after,path_before,copy_tazar):
