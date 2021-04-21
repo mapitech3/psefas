@@ -633,7 +633,7 @@ class UpdateGeometry(object):
             arcpy.Delete_management(feat_to_poly)
 
             list_layers = ['dissolve'+ random_name,'Feature_to_poly'+ random_name,'Dissolve_temp',\
-                           'Topolgy_Check_holes'+ random_name,'Topolgy_Check_intersect' + random_name,'_temp']
+                           'Topolgy_Check_holes'+ random_name,'Topolgy_Check_intersect' + random_name,'_temp','Errors_polygon']
             
             Delete_layers_from_MXD(list_layers)
 
