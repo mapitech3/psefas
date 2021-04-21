@@ -82,7 +82,8 @@ path_bankal       = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_
 path_line         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_ARC'
 path_point        = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_finish_proc\Cadaster\PSEFAS_DATA.gdb\PARCEL_NODE'
 
-path_source_tazar         = arcpy.GetParameterAsText(0) # folder of tazars to make as AOI
+path_source_tazar         = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\data\1036'
+# path_source_tazar         = arcpy.GetParameterAsText(0) # folder of tazars to make as AOI
 
 # Out_put
 folder_out_put    = r'C:\Users\Administrator\Desktop\medad\python\Work\Mpy\Test_Start_proc\temp'
@@ -107,6 +108,7 @@ for i in range(len(list_path_Num[0])):
     line        = tazar_gdb + '\\' + 'PARCEL_ARC_EDIT'
     point       = tazar_gdb + '\\' + 'PARCEL_NODE_EDIT'
 
+    # Create Polygon
     arcpy.MakeFeatureLayer_management  (path_bankal, lyr_name,"\"GUSH_NUM\" in ({})".format(gush_to_add))
     arcpy.CopyFeatures_management      (lyr_name   , parcel)
 
@@ -125,6 +127,12 @@ for i in range(len(list_path_Num[0])):
 
     # creating copy for source parcels lines and points
     for layer in [parcel,line,point]: arcpy.CopyFeatures_management(layer,layer + '_copy')
+
+    year = os.path.basename(os.path.dirname(list_path_Num[0][i])).split('.')[0].split('_')[-1]
+    if year.isdigit():
+        if int(year) >= 1900 and int(year) <= 2058:
+            arcpy.CalculateField_management(parcel_tazar,'TALAR_NUM' ,list_path_Num[1][i],"VB")
+            arcpy.CalculateField_management(parcel_tazar,'TALAR_YEAR',year,"VB")
 
     # create and opening mxd
     mxd_making (mxd_path_template,gdb_path_template,list_path_Num[1][i],tazar_gdb,tazar_folder)

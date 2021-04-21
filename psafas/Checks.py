@@ -31,20 +31,20 @@ ErrorDictionary_services = {"1" : "בדיקת חלקות",
                     "4": "בדיקת ערכים",
                     "8": "בדיקת חלקות מבוטלות"}
 
-ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
-                    "2": "Missing modad point",
-                    "3": "topology test - Holes",
-                    "4": "topology test - Intersect",
-                    "5": "arc and parcel are not overlap",
-                    "6": "vertex without point from modad",
-                    "7": "missing arc",
-                    "8": "overlap arc",
-                    "9": "double point",
-                    "10":"area not standard",
-                    "11":"double parcel ID",
-                    "12":"Point not on parcel border",
-                    "13":"Number of parcel or Gush are not Invalid",
-                    "14":"Parcel changed in the border of AOI"}
+# ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
+#                     "2": "Missing modad point",
+#                     "3": "topology test - Holes",
+#                     "4": "topology test - Intersect",
+#                     "5": "arc and parcel are not overlap",
+#                     "6": "vertex without point from modad",
+#                     "7": "missing arc",
+#                     "8": "overlap arc",
+#                     "9": "double point",
+#                     "10":"area not standard",
+#                     "11":"double parcel ID",
+#                     "12":"Point not on parcel border",
+#                     "13":"Number of parcel or Gush are not Invalid",
+#                     "14":"Parcel changed in the border of AOI"}
 
 
 
