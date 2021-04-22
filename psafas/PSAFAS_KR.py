@@ -43,7 +43,7 @@ def Get_layer_gdb_Copy(GDB):
 scriptPath = os.path.abspath(__file__)
 Scripts    = os.path.dirname(scriptPath)
 ToolShare  = os.path.dirname(Scripts)
-Scratch    = ToolShare + "\\Scratch"
+Scratch    = ToolShare + "\\Scratch1"
 ToolData   = ToolShare + "\\ToolData"
 
 parcels_bankal         = arcpy.GetParameterAsText(0)
@@ -101,6 +101,7 @@ if CheckResultsIsOK(AOI,tazar_border,1):
 Sub_Processing(parcel_bankal,parcel_modad_c,point_bankal,point_modad,arc_bankal,arc_modad,tazar_border,parcel_modad_c,AOI,GDB)
 
 if Continue:
+    
     Dis_border_pnts = get_default_Snap_border (Point_bankal_Cut,parcel_modad_c,Dis_limit_border_pnts) 
     Snap_border_pnts        (tazar_border ,AOI,Dis_border_pnts) # סתימת חורים ע"י הזזת נקודות גבול
     Update_Polygons         (AOI , parcel_modad_c)
@@ -159,7 +160,7 @@ print_arcpy_message ("  #   #   #    # Preper data For Insert  #   #   #   #  ")
 Calculate_Area_Rashum   (AOI_final)
 NewGushim               (parcel_modad_c, parcel_bankal,AOI_final)
 Get_Point_AOI           (AOI_final,point_bankal_c,point_modad_c,AOI_Point)
-Create_Line_AOI         (AOI_final,tazar_border,Curves,arc_bankal_c,arc_modad_c,AOI_Line)
+Create_Line_AOI         (AOI_final,tazar_border,Curves,arc_bankal_c,AOI_Line)
 
 #  #  #  #  #  #  # insert To Razaf #  #  #  #  #  #  #  # #
 

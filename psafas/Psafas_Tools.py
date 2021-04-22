@@ -944,7 +944,7 @@ def delete_Line_by_polygon(AOI_Line,tazar_border,Dissolve = False,num = 0.001):
                     row[0]    = new_geom
                     cursor.updateRow(row)
 
-def Create_Line_AOI(aoi,tazar_border,curves,bankal_line,modad_line,New_Line):
+def Create_Line_AOI(aoi,tazar_border,curves,bankal_line,New_Line):
 
     print_arcpy_message('START Func: Create_Line_AOI',1)
 

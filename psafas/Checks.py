@@ -11,40 +11,40 @@ import pythonaddins
 
 arcpy.env.overwriteOutPut = True
 
-ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקות",
-                    "2": "נקודת מודד חסרה",
-                    "3": "בדיקת טופולוגיה - חורים",
-                    "4": "בדיקת טופולוגיה - חפיפות",
-                    "5": "אי התאמה של חזית עם גבול חלקה",
-                    "6": "וורטקס ללא נקודה מהמודד",
-                    "7": "חזית חסרה",
-                    "8": "חזית כפולה",
-                    "9": "נקודת גבול כפולה",
-                    "10":"שטח חלקה לא עומד בתקן",
-                    "11":"מספר חלקה כפול",
-                    "12":"אי הצמדה של נקודת גבול לגבולות החלקה",
-                    "13":"מספר חלקה או גוש לא תקין",
-                    "14":"שונתה חלקה גובלת עם גושים חיצוניים לאזור העבודה"}
+# ErrorDictionary = {"1": "ערכים חסרים בשדות של שכבת חלקות",
+#                     "2": "נקודת מודד חסרה",
+#                     "3": "בדיקת טופולוגיה - חורים",
+#                     "4": "בדיקת טופולוגיה - חפיפות",
+#                     "5": "אי התאמה של חזית עם גבול חלקה",
+#                     "6": "וורטקס ללא נקודה מהמודד",
+#                     "7": "חזית חסרה",
+#                     "8": "חזית כפולה",
+#                     "9": "נקודת גבול כפולה",
+#                     "10":"שטח חלקה לא עומד בתקן",
+#                     "11":"מספר חלקה כפול",
+#                     "12":"אי הצמדה של נקודת גבול לגבולות החלקה",
+#                     "13":"מספר חלקה או גוש לא תקין",
+#                     "14":"שונתה חלקה גובלת עם גושים חיצוניים לאזור העבודה"}
 
 ErrorDictionary_services = {"1" : "בדיקת חלקות",
                     "2" : "בדיקת גושים",
                     "4": "בדיקת ערכים",
                     "8": "בדיקת חלקות מבוטלות"}
 
-# ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
-#                     "2": "Missing modad point",
-#                     "3": "topology test - Holes",
-#                     "4": "topology test - Intersect",
-#                     "5": "arc and parcel are not overlap",
-#                     "6": "vertex without point from modad",
-#                     "7": "missing arc",
-#                     "8": "overlap arc",
-#                     "9": "double point",
-#                     "10":"area not standard",
-#                     "11":"double parcel ID",
-#                     "12":"Point not on parcel border",
-#                     "13":"Number of parcel or Gush are not Invalid",
-#                     "14":"Parcel changed in the border of AOI"}
+ErrorDictionary = {"1": "Missing Values in fields of parcel layer", # test
+                    "2": "Missing modad point",
+                    "3": "topology test - Holes",
+                    "4": "topology test - Intersect",
+                    "5": "arc and parcel are not overlap",
+                    "6": "vertex without point from modad",
+                    "7": "missing arc",
+                    "8": "overlap arc",
+                    "9": "double point",
+                    "10":"area not standard",
+                    "11":"double parcel ID",
+                    "12":"Point not on parcel border",
+                    "13":"Number of parcel or Gush are not Invalid",
+                    "14":"Parcel changed in the border of AOI"}
 
 
 
@@ -461,8 +461,10 @@ def missing_modad_point(layer_node,parcel_modad,node_modad,gdb):
 
     deleteErrorCode (node_error, ["2"])
 
+    arcpy.CopyFeatures_management(layer_node.layer,'in_memory\\Node_copy')
+
     # check = layer_node.layer - node_modad.layer
-    arcpy.MakeFeatureLayer_management     (layer_node.layer,'layer_node_lyr')
+    arcpy.MakeFeatureLayer_management     ('in_memory\\Node_copy','layer_node_lyr')
     arcpy.SelectLayerByLocation_management('layer_node_lyr',"INTERSECT",node_modad.layer,'0.01 meters',"NEW_SELECTION","INVERT")
 
     Del_Layer_on_ref       (Error_temp,parcel_modad,'INVERT')
