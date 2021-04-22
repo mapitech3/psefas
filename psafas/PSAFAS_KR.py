@@ -43,7 +43,7 @@ def Get_layer_gdb_Copy(GDB):
 scriptPath = os.path.abspath(__file__)
 Scripts    = os.path.dirname(scriptPath)
 ToolShare  = os.path.dirname(Scripts)
-Scratch    = ToolShare + "\\Scratch1"
+Scratch    = ToolShare + "\\Scratch"
 ToolData   = ToolShare + "\\ToolData"
 
 parcels_bankal         = arcpy.GetParameterAsText(0)
