@@ -47,6 +47,7 @@ Scratch    = ToolShare + "\\Scratch"
 ToolData   = ToolShare + "\\ToolData"
 
 parcels_bankal         = arcpy.GetParameterAsText(0)
+Dis_border_pnts        = arcpy.GetParameterAsText(1)
 Folder                 = Scratch
 Dis_limit_border_pnts  = 1
 sett                   = ToolData + '\\' + r'Set.gdb\Sett'
@@ -102,7 +103,11 @@ Sub_Processing(parcel_bankal,parcel_modad_c,point_bankal,point_modad,arc_bankal,
 
 if Continue:
     
-    Dis_border_pnts = get_default_Snap_border (Point_bankal_Cut,parcel_modad_c,Dis_limit_border_pnts) 
+    if not Dis_border_pnts:
+        Dis_border_pnts = get_default_Snap_border (Point_bankal_Cut,parcel_modad_c,Dis_limit_border_pnts)
+    else:
+        print_arcpy_message('1', status=1)
+
     Snap_border_pnts        (tazar_border ,AOI,Dis_border_pnts) # סתימת חורים ע"י הזזת נקודות גבול
     Update_Polygons         (AOI , parcel_modad_c)
     Fix_curves              (AOI,tazar_border,Curves)

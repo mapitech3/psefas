@@ -566,3 +566,6 @@ def Clean_non_exist_pnts(AOI,border,bankal,tazar_copy):
         arcpy.Delete_management(AOI)
         arcpy.Rename_management(save_source,save_name)
 
+
+        
+        

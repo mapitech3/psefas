@@ -564,9 +564,13 @@ def VerticesToTable2(fc, table,c):
 
 def fix_tolerance(layer_path,border):
     
-    gdb           = os.path.dirname(border)
-    border_diss   = gdb + '\\' + 'border_diss'
-    holes_to_keep = gdb + '\\' + 'holes_to_keep'
+    gdb                 = os.path.dirname(border)
+    border_diss         = gdb + '\\' + 'border_diss'
+    holes_to_keep       = gdb + '\\' + 'holes_to_keep'
+    holes_to_keep_tazar = gdb + '\\' + 'holes_to_keep_tazar'
+    holes_to_insert     = gdb + '\\' + 'holes_to_insert'
+
+
     arcpy.Dissolve_management(border,border_diss)
 
     dic_point = {str([float('{0:.0f}'.format(pt.X)),float('{0:.0f}'.format(pt.Y))]):[pt.X,pt.Y] for i in arcpy.SearchCursor(border_diss) for part in i.Shape for pt in part if pt}
@@ -576,6 +580,14 @@ def fix_tolerance(layer_path,border):
     lyr_management = Layer_Management    (layer_path)
     lyr_management.Multi_to_single       ()
     lyr_management.Fill_Holes_in_Polygon (holes_to_keep,False,True)
+
+    lyr_management = Layer_Management    (border)
+    lyr_management.Fill_Holes_in_Polygon (holes_to_keep_tazar,False,True)
+
+    arcpy.arcpy.MakeFeatureLayer_management(layer_path,'layer_path_lyr')
+    arcpy.SelectLayerByLocation_management('layer_path_lyr',"ARE_IDENTICAL_TO",holes_to_keep_tazar)
+    if int(str(arcpy.GetCount_management('layer_path_lyr'))) > 0: arcpy.CopyFeatures_management ('layer_path_lyr',holes_to_insert)
+
 
     Ucursor = arcpy.UpdateCursor(layer_path)
     for i in Ucursor:
@@ -608,6 +620,9 @@ def fix_tolerance(layer_path,border):
 
     
     Delete_polygons(layer_path,holes_to_keep)
+    Delete_polygons(layer_path,holes_to_keep_tazar)
+    if arcpy.Exists(holes_to_insert):arcpy.Append_management (holes_to_insert,layer_path, 'NO_TEST')
+
 
 
 def Spatial_Connection_To_LabelPoint(layer,ref,field_to_pass = []):

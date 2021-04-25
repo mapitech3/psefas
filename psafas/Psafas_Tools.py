@@ -868,7 +868,7 @@ def Fix_Multi_part_Bankal(layer,tazar_border,parcel_Bankal_cut):
 	Multi_part_inter = layer            +'Temp2'
 	save_name        = layer
 
-	arcpy.Buffer_analysis     (tazar_border,diss_temp,250)
+	arcpy.Buffer_analysis     (tazar_border,diss_temp,400)
 
 	Delete_polygons            (parcel_Bankal_cut,diss_temp,after_del)
 

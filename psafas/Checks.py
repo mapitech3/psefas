@@ -698,7 +698,7 @@ def get_envelop_area(path,num):
     arcpy.SelectLayerByLocation_management (feat_name, "BOUNDARY_TOUCHES",New_Line)
     arcpy.Select_analysis                  (feat_name, cut_layer)
 
-    data = {int(row[0]):row[1] for row in arcpy.da.SearchCursor(cut_layer,['PARCEL_ID','SHAPE@'])}
+    data = {int(row[0]):row[1] for row in arcpy.da.SearchCursor(cut_layer,['PARCEL_ID','SHAPE@']) if row[0] if row[1]}
 
     return data
 
@@ -716,8 +716,7 @@ def Found_bad_parcel_around_AOI(path_new,ws,gdb):
 
     geoms = []
     if len(list_area_problem) > 0:
-        for i in list_area_problem:
-            print_arcpy_message("key: {} has changed, from area of: {}, to area of: {}".format(i[0],round(i[1].area,2),round(i[2].area,2)),2)
+        for i in list_area_problem: print_arcpy_message("key: {} has changed, from area of: {}, to area of: {}".format(i[0],round(i[1].area,2),round(i[2].area,2)),2)
         
         geoms   = [i[1] for i in list_area_problem]
         fields  = ['SHAPE@','ERROR_Code','ERROR_TYPE']
