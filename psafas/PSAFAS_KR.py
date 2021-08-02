@@ -189,6 +189,8 @@ def PSAFAS(parcel_tazar,mxd_newPath):
 
     del_Non_Boundery_Line    (arc_bankal,AOI_final,tazar_border)
     Delete_Duplic_Line       (arc_bankal)
+    
+    
 
     # # # # Points
 

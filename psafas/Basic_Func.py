@@ -765,6 +765,8 @@ def Split_Polygon_to_line_By_Vertex(Polygon,aoi_line):
                         prevX = None
                         prevY = None
     del iCursor
+    arcpy.RepairGeometry_management(aoi_line)
+    return aoi_line
 
 
 def Multi_to_single(layer):
@@ -819,6 +821,8 @@ def Delete_Duplic_Line(fc):
                 arcpy.Dissolve_management              (del_layer,diss_layer)
                 arcpy.MultipartToSinglepart_management (diss_layer,Append_layer)
                 arcpy.Append_management                (Append_layer,fc,"NO_TEST")
+
+	arcpy.RepairGeometry_management(fc)
 
 
 def Layer_To_Edge_list(layer):
