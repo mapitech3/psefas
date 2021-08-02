@@ -298,7 +298,7 @@ class Layer_Management():
 
         Feature_to_polygon(self.layer,Out_put)
         New_polygons = int(str(arcpy.GetCount_management(Out_put))) -  self.len()
-        print ('New polygons : {}'.format(str(New_polygons)))
+        # print ('New polygons : {}'.format(str(New_polygons)))
         arcpy.CalculateField_management(Out_put, "Holes", "Re_1( !Holes! )", "PYTHON_9.3", "def Re_1(x):\\n    if x != 0:\\n        return 1\\n    else:\\n        return 0")
 
 
