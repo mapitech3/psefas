@@ -176,11 +176,11 @@ def mxd_making(mxd_path,gdb_path,tazar_num,gdb,out_put,parcel_tazar):
 
     # Cheaks          (out_put + "\\EditTazar"+tazar_num+".mxd")
 
-    # ###########################################
+    ###########################################
 
-    # arcpy.AddMessage("Open MXD Copy")
-    # os.startfile    (out_put + "\\EditTazar"+tazar_num+".mxd")
-    # arcpy.RefreshActiveView()
+    arcpy.AddMessage("Open MXD Copy")
+    os.startfile    (out_put + "\\EditTazar"+tazar_num+".mxd")
+    arcpy.RefreshActiveView()
 
 
 

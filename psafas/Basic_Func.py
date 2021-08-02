@@ -685,35 +685,86 @@ def delete_parts_if_inside(layer,delete):
     layer.Select_By_Location('INTERSECT',LabelPoint.layer)
 
 
-def Split_Line_By_Vertex(aoi_line):
+# def Split_Line_By_Vertex(aoi_line):
 
-    Multi_to_single(aoi_line)
-    New_Line  = aoi_line + '_Temp'
-    save_name = aoi_line
+#     Multi_to_single(aoi_line)
+#     New_Line  = aoi_line + '_Temp'
+#     save_name = aoi_line
 
-    arcpy.Select_analysis(aoi_line, New_Line, "\"OBJECTID\" < 0")
-    iCursor = arcpy.da.InsertCursor(New_Line, ["SHAPE@"])
-    with arcpy.da.SearchCursor(aoi_line,["SHAPE@"]) as sCursor:
+#     arcpy.Select_analysis(aoi_line, New_Line, "\"OBJECTID\" < 0")
+#     iCursor = arcpy.da.InsertCursor(New_Line, ["SHAPE@"])
+#     with arcpy.da.SearchCursor(aoi_line,["SHAPE@"]) as sCursor:
+#         for row in sCursor:
+#             for part in row[0]:
+#                 prevX = None
+#                 prevY = None
+#                 for pnt in part:
+#                     if pnt:
+#                         if prevX:
+#                             array = arcpy.Array([arcpy.Point(prevX, prevY),
+#                                                 arcpy.Point(pnt.X, pnt.Y)])
+#                             polyline = arcpy.Polyline(array)
+#                             iCursor.insertRow([polyline])
+#                         prevX = pnt.X
+#                         prevY = pnt.Y
+#                     else:
+#                         pass
+
+#     del iCursor
+
+#     arcpy.Delete_management                (aoi_line)
+#     arcpy.Rename_management                (New_Line,save_name)
+
+
+def Split_Polygon_to_line_By_Vertex(Polygon,aoi_line):
+
+    def get_curve_from_poly(curve1):
+        curve1 = curve1['curveRings'][0]
+        dict_ = {}
+        for i in range(len(curve1)):
+            if type(curve1[i]) == dict:
+                if type(curve1[i-1]) == list:
+                    dict_[str(curve1[i-1][0]) + '-' + str(curve1[i-1][1])] = curve1[i]
+                else:
+                    dict_[str(curve1[i-1]['c'][0][0]) + '-' +str(curve1[i-1]['c'][0][1])] = curve1[i]
+        return dict_
+
+    gdb  = os.path.dirname (aoi_line)
+    name = os.path.basename(aoi_line)
+    arcpy.CreateFeatureclass_management (gdb,name,'POLYLINE')
+
+    iCursor = arcpy.da.InsertCursor (aoi_line, ["SHAPE@"])
+
+    with arcpy.da.SearchCursor(Polygon,["SHAPE@"]) as sCursor:
         for row in sCursor:
+            j = json.loads(row[0].JSON)
+            curve = {}
+            if 'curve' in str(j):
+                curve = get_curve_from_poly(j)
             for part in row[0]:
                 prevX = None
                 prevY = None
                 for pnt in part:
                     if pnt:
                         if prevX:
-                            array = arcpy.Array([arcpy.Point(prevX, prevY),
-                                                arcpy.Point(pnt.X, pnt.Y)])
-                            polyline = arcpy.Polyline(array)
+                            if curve.get(str(prevX) +'-'+ str(prevY)):
+                                
+                                template = {'curvePaths': [[[prevX,prevY],curve[str(prevX) +'-'+ str(prevY)]]], 'spatialReference': {'wkid': 2039, 'latestWkid': 2039}}
+
+                                polyline = arcpy.AsShape(template,True)
+                            else:
+                                array = arcpy.Array([arcpy.Point(prevX, prevY),
+                                                    arcpy.Point(pnt.X, pnt.Y)])
+                                polyline = arcpy.Polyline(array)
                             iCursor.insertRow([polyline])
+                    
                         prevX = pnt.X
                         prevY = pnt.Y
+                        
                     else:
-                        pass
-
+                        prevX = None
+                        prevY = None
     del iCursor
-
-    arcpy.Delete_management                (aoi_line)
-    arcpy.Rename_management                (New_Line,save_name)
 
 
 def Multi_to_single(layer):

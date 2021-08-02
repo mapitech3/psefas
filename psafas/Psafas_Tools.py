@@ -944,46 +944,12 @@ def delete_Line_by_polygon(AOI_Line,tazar_border,Dissolve = False,num = 0.001):
                     row[0]    = new_geom
                     cursor.updateRow(row)
 
-def Create_Line_AOI(aoi,tazar_border,curves,bankal_line,New_Line):
+
+def Create_Line_AOI(AOI_final,New_Line):
 
     print_arcpy_message('START Func: Create_Line_AOI',1)
 
-    gdb = os.path.dirname(tazar_border)
-    bankal_cut   = gdb + '\\' + 'bankal_cut'
-    curves_temp  = gdb + '\\' + 'curves_temp'
-    Return_line  = gdb + '\\' + 'Return_line'
-
-    Polygon_To_Line_holes    (aoi,New_Line)
-    Split_Line_By_Vertex     (New_Line)
-    delete_Line_by_polygon   (New_Line,tazar_border)
-
-    Layer_Management         (curves).Select_By_Location('COMPLETELY_WITHIN',tazar_border,'1 Meters',curves_temp,'invert')
-
-    Layer_Management         (New_Line).Select_By_Location('INTERSECT',curves_temp)
-
-    Layer_Management         (bankal_line).Select_By_Location ('INTERSECT',aoi,0,bankal_cut)
-
-    Layer_Management         (bankal_cut).Select_By_Location ('INTERSECT',curves_temp,0,Return_line)  # החזרה של הקווים שנמחקו בעקבות הקשתות
-
-    Layer_Management         (bankal_cut).Select_By_Location ('INTERSECT',aoi,'1 Meters',None,'invert')
-
-    delete_Line_by_polygon   (bankal_cut,tazar_border,False,1)
-
-    arcpy.Append_management  (bankal_cut,New_Line,'NO_TEST')
-    Layer_Management         (Return_line).Select_By_Location('INTERSECT',tazar_border,0,None,'invert') 
-
-    arcpy.Append_management  (Return_line,New_Line,'NO_TEST')
-
-    Multi_to_single          (New_Line)
-
-    del_line_Not_on_parcels  (New_Line,aoi)
-
-    Delete_Duplic_Line       (New_Line)
-
-    fix_tolerance_line       (New_Line,tazar_border)
-
-    Delete_layers_after_use([bankal_cut,curves_temp])
-
+    Split_Polygon_to_line_By_Vertex(AOI_final,New_Line)
 
     return New_Line
 

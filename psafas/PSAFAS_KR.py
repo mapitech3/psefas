@@ -164,43 +164,43 @@ def PSAFAS(parcel_tazar,mxd_newPath):
 
     Calculate_Area_Rashum   (AOI_final)
     NewGushim               (parcel_modad_c, parcel_bankal,AOI_final)
-    # Get_Point_AOI           (AOI_final,point_bankal_c,point_modad_c,AOI_Point)
-    # Create_Line_AOI         (AOI_final,tazar_border,Curves,arc_bankal_c,AOI_Line)
+    Get_Point_AOI           (AOI_final,point_bankal_c,point_modad_c,AOI_Point)
+    Create_Line_AOI         (AOI_final,AOI_Line)
 
-    # #  #  #  #  #  #  # insert To Razaf #  #  #  #  #  #  #  # #
+    #  #  #  #  #  #  # insert To Razaf #  #  #  #  #  #  #  # #
 
-    # print_arcpy_message ("  #   #   #    # insert To Razaf  #   #   #   #  ")
+    print_arcpy_message ("  #   #   #    # insert To Razaf  #   #   #   #  ")
 
-    # # # # # # Polygons 
+    # # # # # Polygons 
 
-    # Update_Polygons           (parcel_bankal,AOI_final)
+    Update_Polygons           (parcel_bankal,AOI_final)
 
-    # # # # # Lines
+    # # # # Lines
 
-    # arcpy.Dissolve_management (AOI_final,diss_aoi)
-    # Layer_Management          (arc_bankal).Select_By_Location ('COMPLETELY_WITHIN',diss_aoi)
-    # arcpy.Append_management   (AOI_Line,arc_bankal,'NO_TEST')
+    arcpy.Dissolve_management (AOI_final,diss_aoi)
+    Layer_Management          (arc_bankal).Select_By_Location ('COMPLETELY_WITHIN',diss_aoi)
+    arcpy.Append_management   (AOI_Line,arc_bankal,'NO_TEST')
 
+    # # # Maybe not needed any mroe
     # Multi_to_single           (arc_bankal)
-
     # arcpy.Append_management  (arc_modad_c,arc_bankal,'NO_TEST')
-
     # del_Non_Boundery_Line    (arc_bankal,AOI_final,tazar_border)
+    # Find_stubbern_lines      (arc_bankal,AOI_final,tazar_border) 
+    # # # # # # # # # # # # # # # # # #
 
-    # Find_stubbern_lines      (arc_bankal,AOI_final,tazar_border)
-    # Delete_Duplic_Line       (arc_bankal)
+    Delete_Duplic_Line       (arc_bankal)
 
-    # # # # # Points
+    # # # # Points
 
-    # bankal_pnts = Layer_Management (point_bankal).Select_By_Location('INTERSECT',AOI_final)
+    Layer_Management (point_bankal).Select_By_Location('INTERSECT',AOI_final)
 
-    # arcpy.Append_management        (AOI_Point,point_bankal)
+    arcpy.Append_management        (AOI_Point,point_bankal)
 
-    # #    #   #    #  #
+    #    #   #    #  #
 
-    # print_arcpy_message ("  #   #   #    #  Last Checks  #   #   #   #  ")
+    print_arcpy_message ("  #   #   #    #  Last Checks  #   #   #   #  ")
 
-    # Parcel_data         (parcel_bankal,parcel_bankal_c,parcel_modad_c)
+    Parcel_data         (parcel_bankal,parcel_bankal_c,parcel_modad_c)
 
-    # print_arcpy_message     ("# # # # # # # #     F I N I S H     # # # # # # # # #",1)
+    print_arcpy_message     ("# # # # # # # #     F I N I S H     # # # # # # # # #",1)
 
