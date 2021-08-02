@@ -184,10 +184,10 @@ def PSAFAS(parcel_tazar,mxd_newPath):
     # # # Maybe not needed any mroe
     # Multi_to_single           (arc_bankal)
     # arcpy.Append_management  (arc_modad_c,arc_bankal,'NO_TEST')
-    # del_Non_Boundery_Line    (arc_bankal,AOI_final,tazar_border)
     # Find_stubbern_lines      (arc_bankal,AOI_final,tazar_border) 
     # # # # # # # # # # # # # # # # # #
 
+    del_Non_Boundery_Line    (arc_bankal,AOI_final,tazar_border)
     Delete_Duplic_Line       (arc_bankal)
 
     # # # # Points
